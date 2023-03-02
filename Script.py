@@ -1,7 +1,7 @@
 import pandas as pd
 from unidecode import unidecode
 
-df = pd.read_excel('Consolidado FLCM_Col_ANTTableToExcel.xlsx')
+df = pd.read_excel('Name_File.xlsx')
 
 for row in df.index:
     for column in df.columns:
@@ -16,7 +16,7 @@ for row in df.index:
                 valor = str(valor)
             df.loc[row, column] = valor
 
-df.to_excel('ejemplo_modificado.xlsx', index=False)
+df.to_excel('Modified_file.xlsx', index=False)
 
 
 
