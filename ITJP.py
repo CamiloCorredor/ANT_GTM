@@ -1,20 +1,24 @@
+
+from ctypes import c_char_p
 import time
 start_time = time.time()
 
 import openpyxl
+import os
+os.environ['USE_PYGEOS'] = '0'
 import geopandas as gpd
-from osgeo import gdal
+
 
 import psycopg2
 import time
-from shapely.geometry import shape
 from shapely.wkb import loads
 import os
-os.environ['USE_PYGEOS'] = '0'
 
 import binascii
 import matplotlib.pyplot as plt
 
+
+import time
 
 connection = psycopg2.connect(
     host="localhost",
@@ -24,7 +28,7 @@ connection = psycopg2.connect(
 )
 
 cursor = connection.cursor()
-sql = f"""select P.id_operacion as QR, (st_area(T.geometria))/10000, I.nombre, I.documento_identidad, P.nombre, T.geometria as geom
+sql = f"""select P.id_operacion as QR, (st_area(T.geometria))/10000, I.nombre, I.documento_identidad, P.nombre, T.geometria as geom, P.matricula_inmobiliaria as fmi
 from rev_08.lc_predio as P
 inner join rev_08.lc_terreno as T on P.id_operacion = T.etiqueta 
 inner join rev_08.lc_derecho as D on P.t_id = D.unidad
@@ -58,24 +62,31 @@ hex_wkb = schema[0][5]
 wkb = binascii.unhexlify(hex_wkb)
 geometry = loads(wkb)
 
-R_Terreno = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.gpkg", use_threads=True, chunksize=1000)
-cd = time.time()
-print(cd-start_time)
-ZRC = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/ZRC_PatoBalsillas.gpkg")
 
-##Cédula catastral
-CC_pol = gpd.overlay(R_Terreno, gpd.GeoDataFrame(geometry = [geometry]), how = 'intersection')
-print(CC_pol.head())
+# R_Terreno = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.shp")
+# R_Terreno.to_crs('EPSG:9377', inplace=True)
 
-#CC_pol.plot()
-# plt.show()
+# ZRC = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/ZRC_PatoBalsillas.gpkg")
+# ZRC.to_crs('EPSG:9377', inplace=True)
+
+# # # ##Cédula catastral FMI
+# CC_pol = gpd.overlay(R_Terreno, gpd.GeoDataFrame(geometry = [geometry]), how = 'intersection')
+# sheet['AC21'] = CC_pol.iloc[0,0]
+
+print(schema[0][6])
+if schema[0][6] is None:
+    sheet['V21'] = 'X'
+    sheet['X21'] = 'No registra'
+else:
+    sheet['T21'] = 'SI X'
+    sheet['X21'] = schema[0][6]
+  
 
 
+# ##Zona de reserva campesina
+# ZRC_pol = gpd.overlay(ZRC, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
+# a_ZRC_pol = (ZRC_pol.geometry.area)/10000
 
-
-##Zona de reserva campesina
-ZRC_pol = gpd.overlay(ZRC, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-a_ZRC_pol = (ZRC_pol.geometry.area)/10000
 # print(a_ZRC_pol)
 # if float(a_ZRC_pol) > 0:
 #     sheet['H36'] = 'SI X'
@@ -84,7 +95,9 @@ a_ZRC_pol = (ZRC_pol.geometry.area)/10000
 #     sheet['H36'] = 'SI'
 #     sheet['J36'] = '¿Cuál?'
 
-print('ok')
+
+cd = time.time()
+print(f'Tiempo de ejecucion: {cd-start_time}')
 
 
 
