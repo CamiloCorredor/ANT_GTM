@@ -1,24 +1,26 @@
 
 from ctypes import c_char_p
 import time
-start_time = time.time()
+from osgeo import ogr, osr
+
+
+import shapely.wkb
+from shapely.geometry import Polygon
+
 
 import openpyxl
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gpd
 
-
 import psycopg2
-import time
+
 from shapely.wkb import loads
+from shapely import wkb
 import os
 
 import binascii
 import matplotlib.pyplot as plt
-
-
-import time
 
 connection = psycopg2.connect(
     host="localhost",
@@ -47,20 +49,60 @@ schema = cursor.fetchall()
 archivo_excel = openpyxl.load_workbook('/home/camilocorredor/DS_P/ETL/ACCTI- F110 - ITJ EJ.xlsx')
 sheet = archivo_excel['Hoja1']
 
+hex_wkb = schema[0][5]
+#wkb = binascii.unhexlify(hex_wkb)
+spatial_reference = osr.SpatialReference()
+spatial_reference.ImportFromEPSG(9377)
+
+# Leer el objeto WKB desde un archivo o una base de datos
+#wkb = hex_wkb
+
+# Convertir el objeto WKB a un objeto shapely
+shapely_obj = shapely.wkb.loads(schema[0][5])
+predio = ogr.CreateGeometryFromWkt(shapely_obj.wkt)
+predio.AssignSpatialReference(spatial_reference)
+#geometry = loads(wkb)
+
 #Nombre solicitante
-# sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
-# Documento de identificación: {schema[0][3]}"""
-# #Nombre del Predio
-# sheet['B19'] = f"""Nombre: {schema[0][4]}"""
-# #Area predio
-# sheet['F21'] = int(schema[0][1])
-# sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
+sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
+Documento de identificación: {schema[0][3]}"""
+#Nombre del Predio
+sheet['B19'] = f"""Nombre: {schema[0][4]}"""
+#Area predio
+sheet['F21'] = int(schema[0][1])
+sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
 #Cedula catastral 
 #Cargar capa predial y realizar intersect AC21
+driver = ogr.GetDriverByName('ESRI Shapefile')
+spatial_reference = osr.SpatialReference()
+spatial_reference.ImportFromEPSG(9377) # 
 
-hex_wkb = schema[0][5]
-wkb = binascii.unhexlify(hex_wkb)
-geometry = loads(wkb)
+# driver = ogr.GetDriverByName('ESRI Shapefile')
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.shp')
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True:
+        sheet['AC21'] = feature.GetField('codigo')
+    else: 
+        a = 1 
+
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Bosques.shp')
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True:
+        print(f'Area interesection{intersect.Area()/1000}')
+        print(f'Area predio {schema[0][1]}')
+        sheet['M34'] = f"""El predio presenta traslape con un área de {round(intersect.Area()/10000,3)}Ha, que equivale a un {round((intersect.Area()/10000)/(schema[0][1])*100,3)}%, con la capa cartográfica Bosques-2010 del IDEAM"""
+    else: 
+        a = 1 
 
 
 #Cargar información
@@ -82,8 +124,8 @@ geometry = loads(wkb)
 # Bosques = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Bosques.shp")
 # Bosques.to_crs('EPSG:9377', inplace=True)
 
-Z_Degradacion = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Zona1_degradacion_suelo.shp")
-Z_Degradacion.to_crs('EPSG:9377', inplace=True)
+# Z_Degradacion = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Zona1_degradacion_suelo.shp")
+# Z_Degradacion.to_crs('EPSG:9377', inplace=True)
 
 
 
@@ -123,16 +165,16 @@ Z_Degradacion.to_crs('EPSG:9377', inplace=True)
 #Para celda M34
 # Ley2 = gpd.overlay(Ley_2, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
 # Paramos = gpd.overlay(Paramos, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-Degradacion = gpd.overlay(Z_Degradacion, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
+# Degradacion = gpd.overlay(Z_Degradacion, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
 
-if Degradacion.empty:
-    print('Vacio')
-else:
-    print('No vacio')
+# if Degradacion.empty:
+#     print('Vacio')
+# else:
+#     print('No vacio')
 
 
-cd = time.time()
-print(f'Tiempo de ejecucion: {cd-start_time}')
+# cd = time.time()
+# print(f'Tiempo de ejecucion: {cd-start_time}')
 
 
 
