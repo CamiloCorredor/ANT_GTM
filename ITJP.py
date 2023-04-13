@@ -1,8 +1,9 @@
 
-from ctypes import c_char_p
 import time
+from ctypes import c_char_p
 from osgeo import ogr, osr
-
+print('Iniciando ITJP ...')
+BP = time.time()
 
 import shapely.wkb
 from shapely.geometry import Polygon
@@ -78,7 +79,7 @@ spatial_reference = osr.SpatialReference()
 spatial_reference.ImportFromEPSG(9377) # 
 
 # driver = ogr.GetDriverByName('ESRI Shapefile')
-lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.shp')
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.shp') ##OK Capa
 layer = lyr.GetLayer() 
     
 for feature in layer:     
@@ -87,10 +88,12 @@ for feature in layer:
     inter_tf = geometry.Intersect(predio)
     if inter_tf == True:
         sheet['AC21'] = feature.GetField('codigo')
+        codigo = feature.GetField('codigo')
     else: 
         a = 1 
 
-lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Bosques.shp')
+#En el área solicitada se evidencian zonas de bosques
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Bosques_.shp') ##OK Capa
 layer = lyr.GetLayer() 
     
 for feature in layer:     
@@ -98,93 +101,155 @@ for feature in layer:
     intersect = geometry.Intersection(predio)
     inter_tf = geometry.Intersect(predio)
     if inter_tf == True:
-        print(f'Area interesection{intersect.Area()/1000}')
-        print(f'Area predio {schema[0][1]}')
+        sheet['K34'] = "SI X"
         sheet['M34'] = f"""El predio presenta traslape con un área de {round(intersect.Area()/10000,3)}Ha, que equivale a un {round((intersect.Area()/10000)/(schema[0][1])*100,3)}%, con la capa cartográfica Bosques-2010 del IDEAM"""
+        area_bos = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+        ab = round(intersect.Area()/10000,3)
+    else: 
+        sheet['L34'] = f'NO X'
+
+#Determinantes ambientales
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Drenaje_Sencillo_(30m)_.shp') ## OK
+layer = lyr.GetLayer() 
+
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf1 = geometry.Intersect(predio)
+    if inter_tf1 == True:
+        sheet['K34'] = "SI X"
+        sheet['M34'] = f"""El predio presenta traslape con un área de {round(intersect.Area()/10000,3)}Ha, que equivale a un {round((intersect.Area()/10000)/(schema[0][1])*100,3)}%, con la capa cartográfica Bosques-2010 del IDEAM"""
+        ds = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+        area_ds = round(intersect.Area()/10000,3)
     else: 
         a = 1 
 
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Cuenca_Rios.shp') ##OK Capa
+layer = lyr.GetLayer() 
+C_R_A = []
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True:
+        # C_R_A.append(feature.GetField('NOM_ZH'))
+        CR = feature.GetField('NOM_SZH')
+        CR_A = intersect.Area()
+        
+    else: 
+        pass
 
-#Cargar información
-# R_Terreno = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/R_Terreno.shp")
-# R_Terreno.to_crs('EPSG:9377', inplace=True)
+# ZRC 
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/ZRC_PB.shp') ##OK Capa
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True and round(intersect.Area()/10000,3) == round(schema[0][1],3):
+        p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+        sheet['H36'] = "SI X"
+        sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
+    else: 
+        sheet['L34'] = f'NO X'
 
-# ZRC = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/ZRC_PatoBalsillas.gpkg")
-# ZRC.to_crs('EPSG:9377', inplace=True)
+##Cruce vias Buffer 
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Buffer_Vial.shp') ## Ok Capa
+layer = lyr.GetLayer() 
+area_bf = 0
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True:
+        sheet['K40'] = "SI X"
+        sheet['M34'] = f"""El predio presenta traslape con un área de {round(intersect.Area()/10000,3)}Ha, que equivale a un {round((intersect.Area()/10000)/(schema[0][1])*100,3)}%, con faja de retiro de la vía de primer orden Transversal Neiva - San Vicente"""
+        bv = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+        area_bf = round(intersect.Area()/10000,3)
+        
+    else: 
+        sheet['L40'] = f'NO X'
 
-# Pnn = gpd.read_file('/home/camilocorredor/DS_P/ETL/Layers/PNN.shp')
-# Pnn.to_crs('EPSG:9377', inplace=True)
+## URT 
 
-# Ley_2 = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Ley2.shp")
-# Ley_2.to_crs('EPSG:9377', inplace=True)
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/URT_Pol.shp') ## OK Capa
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf1 = geometry.Intersect(predio)
 
-# Paramos = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Paramos.shp")
-# Paramos.to_crs('EPSG:9377', inplace=True)
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/URT_Pto.shp') ## OK Capa
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf2 = geometry.Intersect(predio)
 
-# Bosques = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Bosques.shp")
-# Bosques.to_crs('EPSG:9377', inplace=True)
+if inter_tf1 == True and inter_tf2 == True or inter_tf1 == True and inter_tf2 == False or inter_tf1 == False and inter_tf2 == True:
+    c_urt = f'presenta traslape'
+else: 
+    pass
+if inter_tf1 == False and inter_tf2 == False:
+    c_urt = f'NO presenta traslape'
+else:
+    pass
 
-# Z_Degradacion = gpd.read_file("/home/camilocorredor/DS_P/ETL/Layers/Zona1_degradacion_suelo.shp")
-# Z_Degradacion.to_crs('EPSG:9377', inplace=True)
+lyr = driver.Open('/home/camilocorredor/DS_P/ETL/Layers/Degradacion_suelo.shp') 
+layer = lyr.GetLayer() 
+    
+for feature in layer:     
+    geometry = feature.GetGeometryRef()
+    intersect = geometry.Intersection(predio)
+    inter_tf = geometry.Intersect(predio)
+    if inter_tf == True:
+        dse_p = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+        dse_a = round(intersect.Area()/10000,3)
+    else: 
+        pass
 
+concepto = f"""Motivación del Concepto Técnico relacionado con continuar con el trámite de adjudicación o proceder a la negación de la solicitud: 
+Concepto Topográfico: El área objeto de intervención se encuentra dentro del área del código predial {codigo} a nombre de la Nación denominado Baldío 
+sin folio de matrícula inscrito en la base del IGAC, """
+##Concepto cruce --all
+if area_ds > 0:
+    concepto = concepto + f'presenta cruce con drenaje sencillo en un área de {area_ds}m2 equivalentes al {ds}% del área de intervención'
+else:
+    concepto = concepto + f'NO presenta cruce con drenaje sencillo '
+if p_zrc == 100:
+    concepto = concepto + f'La zona en intervención se encuentra contenida 100% en la zona de reserva campesina del PATO BALSILLAS constituida bajo RESOLUCION 055 DE 18-12-1997,'
+else:
+    pass
+if p_zrc < 100 and p_zrc > 0:
+    concepto = concepto + f'La zona en intervención se encuentra parcialmente en la zona de reserva campesina del PATO BALSILLAS'
+elif p_zrc == 0:
+    concepto = concepto + f'La zona en intervención NO encuentra parcialmente en la zona de reserva campesina del PATO BALSILLAS'
+    
+if area_bf > 0:
+    concepto = concepto + f'El predio objeto de estudio presenta traslape con faja de retiro de primer orden Transversal Neiva - San Vicente del Caguán en un área de {area_bf}m2, que equivale al {bv}% del área de intervención.'
+else: 
+    concepto = concepto + f'El predio objeto de estudio NO presenta traslape con faja de retiro de vías nacionales.'
+if c_urt == 'presenta traslape':
+    concepto = concepto + f'Se evidencia traslape frente a la capas geográficas de la Unidad de Restitución de Tierras'
+else:
+    concepto = concepto + f'NO se evidencia traslape frente a la capas geográficas de la Unidad de Restitución de Tierras'
+if area_bos > 0:
+    concepto = concepto + f'El área objeto de intervención presenta traslape con la capa cartográfica Bosques-2010 del IDEAM en un área de {area_bos}, que equivale al {ab}% del área de intervención'
+else:
+    concepto = concepto + f'El área objeto de intervención NO presenta traslape con la capa cartográfica Bosques-2010 del IDEAM'
+if CR_A > 0: 
+    concepto = concepto + f'el predio se encuentra ubicado la cuenca del {CR}, esto no afecta el trámite de formalización'
+else:
+    pass
+if dse_a > 0:
+    concepto = concepto + f'Dentro del área a formalizar se encuentra afectado por zonificación de degradación del suelo por erosión de tipo hídrico moderado en un {dse_p}% del área del predio, esto no afecta el tramite'
 
-
-# # # ##Cédula catastral FMI
-# CC_pol = gpd.overlay(R_Terreno, gpd.GeoDataFrame(geometry = [geometry]), how = 'intersection')
-# sheet['AC21'] = CC_pol.iloc[0,0]
-
-# if schema[0][6] is None:
-#     sheet['V21'] = 'X'
-#     sheet['X21'] = 'No registra'
-# else:
-#     sheet['T21'] = 'SI X'
-#     sheet['X21'] = schema[0][6]
-  
-# ##Zona de reserva campesina
-# ZRC_pol = gpd.overlay(ZRC, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-# a_ZRC_pol = (ZRC_pol.geometry.area)/10000
-
-# print(a_ZRC_pol)
-# if float(a_ZRC_pol) > 0:
-#     sheet['H36'] = 'SI X'
-#     sheet['J36'] = '¿Cuál? Zona de reserva campesina del Pato Balsillas'
-# else:
-#     sheet['H36'] = 'SI'
-#     sheet['J36'] = '¿Cuál?'
-
-# PNN_pol = gpd.overlay(Pnn, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-# A_PNN_pol = PNN_pol.geometry.area
-
-# if PNN_pol.empty:
-#     sheet['L39'] = 'NO X'
-# else:
-#     sheet['K39'] = 'SI X' 
-#     sheet['M39'] = f"""¿Cuál? {PNN_pol.iloc[0,4]} {PNN_pol.iloc[0,2]}"""
-
-
-#Para celda M34
-# Ley2 = gpd.overlay(Ley_2, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-# Paramos = gpd.overlay(Paramos, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-# Degradacion = gpd.overlay(Z_Degradacion, gpd.GeoDataFrame(geometry=[geometry]), how='intersection')
-
-# if Degradacion.empty:
-#     print('Vacio')
-# else:
-#     print('No vacio')
-
-
-# cd = time.time()
-# print(f'Tiempo de ejecucion: {cd-start_time}')
-
-
-
-
-#Plot graph
-# print(hex_wkb)
-# wkb = binascii.unhexlify(hex_wkb)
-# geometry = loads(wkb)
-# gdf = gpd.GeoDataFrame(geometry=[geometry])
-# gdf.plot()
-# plt.show()
-
+sheet['B53'] = concepto
 archivo_excel.save('/home/camilocorredor/DS_P/ETL/Ejemplo1.xlsx')
+
+FP = time.time()
+print('Finaliza ITJP')
+print(f'Tiempo de ejecución {round((FP-BP)/60,2)}mins')
