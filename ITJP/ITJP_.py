@@ -1,3 +1,4 @@
+from pickle import OBJ
 import time
 BP = time.time()
 print('Iniciando ITJP ...')
@@ -24,6 +25,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from num2words import num2words
+
+from datetime import datetime
 
 def intersect_layers_FA(path_layer, object_XTF,Field): ##Return features y areas
     total_area = []
@@ -80,17 +83,23 @@ def sex_interesado(squema):
     return sex_interesado
 
 def cultivos(lis_t1, lis_t2):
+    
     strg = ''
     cultivos = lis_t1 
-    cultivos = cultivos.split(", ")
+    cultivos_ = cultivos.split(", ")
     cultivos_porc = lis_t2
     cultivos_porc_ = cultivos_porc.split(",")
+    a = len(cultivos_)
+    b = len(cultivos_porc_)
 
-    if len(cultivos) == len(cultivos_porc_):
-        for _ in range(0, len(cultivos)):
-            strg = strg + " " +cultivos[_] + "-" + cultivos_porc_[_] + "%, "
+    for cultivos_, cultivos_porc_ in zip(cultivos_, cultivos_porc_):
+        strg += f"{cultivos_} - {cultivos_porc_}%, "
+    return strg
+    
             
     return strg
+
+ID = '1875302203'
 
 connection = psycopg2.connect(
     host="localhost",
@@ -109,7 +118,7 @@ left join rev_08.lc_agrupacioninteresados as AI on D.interesado_lc_agrupacionint
 left join rev_08.col_miembros as CM on AI.t_id = CM.agrupacion 
 left join rev_08.fraccion as F on CM.t_id = F.col_miembros_participacion 
 left join rev_08.lc_interesado as I on CM.interesado_lc_interesado = I.t_id
-where P.id_operacion = '1875300202'"""
+where P.id_operacion = '{ID}'"""
 cursor.execute(sql)
 schema = cursor.fetchall()
 
@@ -124,7 +133,7 @@ left join rev_08.lc_agrupacioninteresados as AGI on D.interesado_lc_agrupacionin
 left join rev_08.col_grupointeresadotipo as GIT on AGI.tipo = GIT.t_id 
 left join rev_08.lc_interesadodocumentotipo as IDT on I.tipo_documento = IDT.t_id
 left join rev_08.lc_sexotipo as SX on I.sexo = SX.t_id 
-where P.id_operacion = '1875300202' """
+where P.id_operacion = '{ID}' """
 cursor.execute(sql_sex)
 schemax = cursor.fetchall()
 
@@ -249,48 +258,124 @@ import numpy as np
 
 agronomia_pd = pd.read_excel('Source_Concepts/UAF.xlsx')
 ID_pred = agronomia_pd.loc[agronomia_pd['ID'] == 5035000257]
-ID_pred_ = np.array(ID_pred)
+date = datetime.strptime(str(ID_pred.iloc[0,7]), '%d/%m/%Y')
+# ID_pred_ = np.array(ID_pred)
 # print(ID_pred_.shape)
 # print(type(ID_pred.iloc[0,3]))
 # print(ID_pred.iloc[0,4])
 
 
-# data_ins_oc = 
-from datetime import datetime
-date = datetime.strptime(str(ID_pred.iloc[0,7]), '%d/%m/%Y')
-print(date)
-# print(ID_pred.iloc[0,7])
 
 
-con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, 
-se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de 
-suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas 
-aptas para determinados cultivos y ganadería bovina y bufalina. \n \n Además se tiene que el predio denominado{schema[0][4]}, ubicado en 
-el departamento de ______________ municipio de ____________ vereda {ID_pred.iloc[0,1]}, cuenta con un área según el plano 
-topográfico  
-de {(num2words(round((float(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS
-{(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} 
-METROS CUADRADOS 
-({round((float(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado 
-hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza 
-una explotación con {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}.
-Según la inspección ocular 
-realizada (ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones 
-tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que 
-representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. 
+def def_uaf(object_XTF):
+    range_UAF = [7.8383,10.639,15.3069,19.6939,33.8393,42.6454,66.1033,92.4583,103.2257,129.6417,264.8417,330.3617]
+    range = []
+    
+    if object_XTF < range_UAF[0] and object_XTF < range_UAF[1]:
+        
+        range.append(range_UAF[0])
+        range.append(range_UAF[1])
+        if object_XTF <= range_UAF[1]:
+            range.append('en el')
+        elif object_XTF < range_UAF[0]:
+            range.append('por debado del')
+    
+        var_dif = [abs(range_UAF[0]-object_XTF),abs(range_UAF[1]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[1],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[0],2))      
+    ##Café frijol
 
-Desde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona
-productiva del predio. 
- 
-Bajo estas condiciones, el grupo de Agronomía a cargo de esta evalución determinó el cálculo de UAF con propuesta de producción de {ID_pred.iloc[0,5]}
+    elif object_XTF >= range_UAF[1] and object_XTF <= range_UAF[3]:
+        
+        range.append(range_UAF[2])
+        range.append(range_UAF[3])
+        if object_XTF <= range_UAF[3] and object_XTF >= range_UAF[2]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[2] and object_XTF >= range_UAF[1]:
+            range.append('por debajo del')
+        
+        var_dif = [abs(range_UAF[2]-object_XTF),abs(range_UAF[3]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[3],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[2],2))
+               ##FRijol - Maíz
 
-se propuso el cálculo de UAF con los siguientes productos _________ y _________, 
-los cuales arrojaron un rango de área para obtener entre 2 a 2.5 smmlv de ____ ha + ____ m2 a ___ ha + ___m2, 
-encontrándose el predio ________ del rango de la UAF mencionada, con la capacidad de producir ____ smmlv, en la actualidad. 
-En consecuencia, desde la parte técnica, se sugiere continuar con el proceso de adjudicación.
+    elif object_XTF >= range_UAF[3] and object_XTF <= 5:        
+        range.append(range_UAF[4])
+        range.append(range_UAF[5])
+        if object_XTF <= range_UAF[5] and object_XTF >= range_UAF[4]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[4] and object_XTF >= range_UAF[3]:
+            range.append('por debado del')
 
-# """
+        var_dif = [abs(range_UAF[4]-object_XTF),abs(range_UAF[5]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[5],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[4],2))
+        ##Caña - Plátano
 
+    elif object_XTF >= range_UAF[5] and object_XTF <= range_UAF[7]:
+        range.append(range_UAF[6])
+        range.append(range_UAF[7])
+        if object_XTF <= range_UAF[7] and object_XTF >= range_UAF[6]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[6] and object_XTF >= range_UAF[5]:
+            range.append('por debado del')
+        var_dif = [abs(range_UAF[6]-object_XTF),abs(range_UAF[7]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[7],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[6],2))
+        ##Maiz Ganaderia
+        
+    elif object_XTF >= range_UAF[7] and object_XTF <= range_UAF[9]:
+        range.append(range_UAF[8])
+        range.append(range_UAF[9])
+        if object_XTF <= range_UAF[9] and object_XTF >= range_UAF[8]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[8] and object_XTF >= range_UAF[7]:
+            range.append('por debado del')
+
+        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[9],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[8],2))
+        ##Ganadería lechec y ganadería ceba
+
+    elif object_XTF >= range_UAF[9] and object_XTF <= range_UAF[11] :
+        range.append(range_UAF[10])
+        range.append(range_UAF[11])
+        if object_XTF <= range_UAF[11] and object_XTF > range_UAF[10]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[10] and object_XTF >= range_UAF[9]:
+            range.append('por debado del')
+        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[11],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[10],2))
+            ##GAnaderia extensiva
+    else: 
+        print('Sin clasificación')
+
+    return range
+
+
+lyr_dep = driver.Open('Layers/Departamentos.shp')
+lyr_dep = driver.Open('Layers/Municipios.shp')
+dep = intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')
+Mun = intersect_layers_F(lyr_dep, predio,'NOMBRE_MUN')
+# data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
+
+print(schema[0][1])
+print(def_uaf(schema[0][1]))
+
+con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_dep, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((float(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((float(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {ID_pred.iloc[0,5]} y resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[2]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[3]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
 print(con_agronomia)
 
 
