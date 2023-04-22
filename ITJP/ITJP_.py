@@ -97,9 +97,121 @@ def cultivos(lis_t1, lis_t2):
     return strg
     
             
-    return strg
+def def_uaf(object_XTF):
+    range_UAF = [7.8383,10.639,15.3069,19.6939,33.8393,42.6454,66.1033,92.4583,103.2257,129.6417,264.8417,330.3617]
+    range = []
+    
+    if object_XTF < range_UAF[0] and object_XTF < range_UAF[1]:
+        
+        range.append(range_UAF[0])
+        range.append(range_UAF[1])
+        range.append('café y frijol')
+        if object_XTF <= range_UAF[1] and object_XTF >= range_UAF[0]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[0]:
+            range.append('por debajo del')
+    
+        var_dif = [abs(range_UAF[0]-object_XTF),abs(range_UAF[1]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[1],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[0],2))      
+    ##Café frijol
 
-ID = '1875302203'
+    elif object_XTF >= range_UAF[1] and object_XTF <= range_UAF[3]:
+        
+        range.append(range_UAF[2])
+        range.append(range_UAF[3])
+        range.append('frijol y maíz')
+        if object_XTF <= range_UAF[3] and object_XTF >= range_UAF[2]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[2] and object_XTF >= range_UAF[1]:
+            range.append('por debajo del')
+        
+        var_dif = [abs(range_UAF[2]-object_XTF),abs(range_UAF[3]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[3],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[2],2))
+               ##FRijol - Maíz
+
+    elif object_XTF >= range_UAF[3] and object_XTF <= range_UAF[5]:        
+        range.append(range_UAF[4])
+        range.append(range_UAF[5])
+        range.append('caña y plátano')
+        if object_XTF <= range_UAF[5] and object_XTF >= range_UAF[4]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[4] and object_XTF >= range_UAF[3]:
+            range.append('por debajo del')
+
+        var_dif = [abs(range_UAF[4]-object_XTF),abs(range_UAF[5]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[5],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[4],2))
+        ##Caña - Plátano
+
+    elif object_XTF >= range_UAF[5] and object_XTF <= range_UAF[7]:
+        range.append(range_UAF[6])
+        range.append(range_UAF[7])
+        range.append('ganadería y maíz')
+        if object_XTF <= range_UAF[7] and object_XTF >= range_UAF[6]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[6] and object_XTF >= range_UAF[5]:
+            range.append('por debajo del')
+        var_dif = [abs(range_UAF[6]-object_XTF),abs(range_UAF[7]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[7],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[6],2))
+        ##Maiz Ganaderia
+        
+    elif object_XTF >= range_UAF[7] and object_XTF <= range_UAF[9]:
+        range.append(range_UAF[8])
+        range.append(range_UAF[9])
+        range.append('ganadería de leche y ceba')
+        if object_XTF <= range_UAF[9] and object_XTF >= range_UAF[8]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[8] and object_XTF >= range_UAF[7]:
+            range.append('por debajo del')
+
+        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[9],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[8],2))
+        ##Ganadería lechec y ganadería ceba
+
+    elif object_XTF >= range_UAF[9] and object_XTF <= range_UAF[11] :
+        range.append(range_UAF[10])
+        range.append(range_UAF[11])
+        range.append('ganadería extensiva')
+        if object_XTF <= range_UAF[11] and object_XTF > range_UAF[10]:
+            range.append('en el')
+        elif object_XTF <= range_UAF[10] and object_XTF >= range_UAF[9]:
+            range.append('por debajo del')
+        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
+        if var_dif[1] < var_dif[0]:
+            range.append(round((object_XTF*2.5)/range_UAF[11],2))
+        else:
+            range.append(round((object_XTF*2.5)/range_UAF[10],2))
+            ##GAnaderia extensiva
+    else: 
+        print('Sin clasificación')
+
+    return range
+
+ID = '1875301550'
+agronomia_pd = pd.read_excel('Source_Concepts/UAF.xlsx')
+ID_pred = agronomia_pd.loc[agronomia_pd['ID'] == int(ID)]
+
+date_ = datetime.strptime(str(ID_pred.iloc[0,7]), '%Y-%m-%d %H:%M:%S')
+date = date_.strftime('%d/%m/%Y')
+
+# ID_pred_ = np.array(ID_pred)
+# print(ID_pred_.shape)
+# print(type(ID_pred.iloc[0,3]))
+# print(ID_pred.iloc[0,4])
 
 connection = psycopg2.connect(
     host="localhost",
@@ -157,16 +269,20 @@ predio.AssignSpatialReference(spatial_reference)
 #geometry = loads(wkb)
 
 #Nombre solicitante
-sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
-Documento de identificación: {schema[0][3]}"""
+# sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
+# Documento de identificación: {schema[0][3]}"""
 #Nombre del Predio
-sheet['B19'] = f"""Nombre: {schema[0][4]}"""
+# sheet['B19'] = f"""Nombre: {schema[0][4]}"""
 #Area predio
-sheet['F21'] = int(schema[0][1])
-sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
+# sheet['F21'] = int(schema[0][1])
+# sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
 #Cedula catastral 
 #Cargar capa predial y realizar intersect AC21
 driver = ogr.GetDriverByName('ESRI Shapefile')
+
+lyr_dep = driver.Open('Layers/Departamentos.shp')
+lyr_mun = driver.Open('Layers/Municipios.shp')
+##Pendiente, realiza cruces extraños
 
 # lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
 # data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
@@ -252,131 +368,15 @@ driver = ogr.GetDriverByName('ESRI Shapefile')
 #     dse_a = round(area_deg_s/10000,3)
 # else: 
 #     pass
-import numpy as np
 
 
-
-agronomia_pd = pd.read_excel('Source_Concepts/UAF.xlsx')
-ID_pred = agronomia_pd.loc[agronomia_pd['ID'] == 5035000257]
-date = datetime.strptime(str(ID_pred.iloc[0,7]), '%d/%m/%Y')
-# ID_pred_ = np.array(ID_pred)
-# print(ID_pred_.shape)
-# print(type(ID_pred.iloc[0,3]))
-# print(ID_pred.iloc[0,4])
-
-
-
-
-def def_uaf(object_XTF):
-    range_UAF = [7.8383,10.639,15.3069,19.6939,33.8393,42.6454,66.1033,92.4583,103.2257,129.6417,264.8417,330.3617]
-    range = []
-    
-    if object_XTF < range_UAF[0] and object_XTF < range_UAF[1]:
-        
-        range.append(range_UAF[0])
-        range.append(range_UAF[1])
-        if object_XTF <= range_UAF[1]:
-            range.append('en el')
-        elif object_XTF < range_UAF[0]:
-            range.append('por debado del')
-    
-        var_dif = [abs(range_UAF[0]-object_XTF),abs(range_UAF[1]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[1],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[0],2))      
-    ##Café frijol
-
-    elif object_XTF >= range_UAF[1] and object_XTF <= range_UAF[3]:
-        
-        range.append(range_UAF[2])
-        range.append(range_UAF[3])
-        if object_XTF <= range_UAF[3] and object_XTF >= range_UAF[2]:
-            range.append('en el')
-        elif object_XTF <= range_UAF[2] and object_XTF >= range_UAF[1]:
-            range.append('por debajo del')
-        
-        var_dif = [abs(range_UAF[2]-object_XTF),abs(range_UAF[3]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[3],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[2],2))
-               ##FRijol - Maíz
-
-    elif object_XTF >= range_UAF[3] and object_XTF <= 5:        
-        range.append(range_UAF[4])
-        range.append(range_UAF[5])
-        if object_XTF <= range_UAF[5] and object_XTF >= range_UAF[4]:
-            range.append('en el')
-        elif object_XTF <= range_UAF[4] and object_XTF >= range_UAF[3]:
-            range.append('por debado del')
-
-        var_dif = [abs(range_UAF[4]-object_XTF),abs(range_UAF[5]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[5],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[4],2))
-        ##Caña - Plátano
-
-    elif object_XTF >= range_UAF[5] and object_XTF <= range_UAF[7]:
-        range.append(range_UAF[6])
-        range.append(range_UAF[7])
-        if object_XTF <= range_UAF[7] and object_XTF >= range_UAF[6]:
-            range.append('en el')
-        elif object_XTF <= range_UAF[6] and object_XTF >= range_UAF[5]:
-            range.append('por debado del')
-        var_dif = [abs(range_UAF[6]-object_XTF),abs(range_UAF[7]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[7],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[6],2))
-        ##Maiz Ganaderia
-        
-    elif object_XTF >= range_UAF[7] and object_XTF <= range_UAF[9]:
-        range.append(range_UAF[8])
-        range.append(range_UAF[9])
-        if object_XTF <= range_UAF[9] and object_XTF >= range_UAF[8]:
-            range.append('en el')
-        elif object_XTF <= range_UAF[8] and object_XTF >= range_UAF[7]:
-            range.append('por debado del')
-
-        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[9],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[8],2))
-        ##Ganadería lechec y ganadería ceba
-
-    elif object_XTF >= range_UAF[9] and object_XTF <= range_UAF[11] :
-        range.append(range_UAF[10])
-        range.append(range_UAF[11])
-        if object_XTF <= range_UAF[11] and object_XTF > range_UAF[10]:
-            range.append('en el')
-        elif object_XTF <= range_UAF[10] and object_XTF >= range_UAF[9]:
-            range.append('por debado del')
-        var_dif = [abs(range_UAF[8]-object_XTF),abs(range_UAF[9]-object_XTF)]
-        if var_dif[1] < var_dif[0]:
-            range.append(round((object_XTF*2.5)/range_UAF[11],2))
-        else:
-            range.append(round((object_XTF*2.5)/range_UAF[10],2))
-            ##GAnaderia extensiva
-    else: 
-        print('Sin clasificación')
-
-    return range
-
-
-lyr_dep = driver.Open('Layers/Departamentos.shp')
-lyr_dep = driver.Open('Layers/Municipios.shp')
-dep = intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')
-Mun = intersect_layers_F(lyr_dep, predio,'NOMBRE_MUN')
-# data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
-
-print(schema[0][1])
-print(def_uaf(schema[0][1]))
-
-con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_dep, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((float(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((float(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {ID_pred.iloc[0,5]} y resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[2]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[3]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
+con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
 print(con_agronomia)
+
+# print(schema[0][1])
+# a = def_uaf(schema[0][1])
+
+
 
 
 
