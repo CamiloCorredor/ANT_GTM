@@ -1,4 +1,5 @@
 import time
+from unicodedata import name
 BP = time.time()
 print('Iniciando ITJP ...')
 from ctypes import c_char_p
@@ -243,7 +244,7 @@ def condiciones(list):
         string = name_lyrs[0]
     return string 
 
-ID = '1875300612'
+ID = '5035000236'
 
 juridico_pd = pd.read_excel('Source_Concepts/Juridico.xlsx')
 ID_pred_ = juridico_pd.loc[juridico_pd['ID'] == int(ID)]
@@ -344,23 +345,23 @@ predio.AssignSpatialReference(spatial_reference)
 
 # Nombre solicitante
 
-if len(schemaxint) == 2:  
-    sheet['B9'] = f"""Nombre solicitante: {schemaxint[0][7]}
-Documento de identifcación: {schemaxint[0][6]}"""
-    sheet['R9'] = f"""Nombre solicitante: {schemaxint[1][7]}
-Documento de identifcación: {schemaxint[1][6]}"""
-elif len(schema) == 1:
-    sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
-Documento de identificación: {schema[0][3]}"""
-else:
-    print('Warning: Predio con mas de dos interesados')
-# Nombre del Predio
-sheet['B19'] = f"""Nombre: {schema[0][4]}"""
-# Area predio
-sheet['F21'] = int(schema[0][1])
-sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
-# Cedula catastral 
-# Cargar capa predial y realizar intersect AC21
+# if len(schemaxint) == 2:  
+#     sheet['B9'] = f"""Nombre solicitante: {schemaxint[0][7]}
+# Documento de identifcación: {schemaxint[0][6]}"""
+#     sheet['R9'] = f"""Nombre solicitante: {schemaxint[1][7]}
+# Documento de identifcación: {schemaxint[1][6]}"""
+# elif len(schema) == 1:
+#     sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
+# Documento de identificación: {schema[0][3]}"""
+# else:
+#     print('Warning: Predio con mas de dos interesados')
+#Nombre del Predio
+# sheet['B19'] = f"""Nombre: {schema[0][4]}"""
+#Area predio
+# sheet['F21'] = int(schema[0][1])
+# sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
+#Cedula catastral 
+#Cargar capa predial y realizar intersect AC21
 driver = ogr.GetDriverByName('ESRI Shapefile')
 lyr_condiciones = []
 lyr_restricciones = []
@@ -373,12 +374,12 @@ lyr_mun = driver.Open('Layers/Municipios.shp')
 # sheet['B20'] = f"""Vereda o Fracción: {ID_pred.iloc[0,1].upper()}"""
 
 
-lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
-data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
-if len(data) > 1:        
-    sheet['AC21'] = '\n'.join(data)
-elif len(data) == 1:
-    sheet['AC21'] = data[0]
+# lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
+# data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
+# if len(data) > 1:        
+#     sheet['AC21'] = '\n'.join(data)
+# elif len(data) == 1:
+#     sheet['AC21'] = data[0]
 
 #En el área solicitada se evidencian zonas de bosques
 
@@ -387,14 +388,16 @@ elif len(data) == 1:
 # area_CR = intersect_layers_FA(lyr_CR, predio,'NOM_ZH')
 
 # ZRC 
-lyr_ZRC = driver.Open('Layers/ZRC_PB.shp') ##OK Capa
-area_ZRC = intersect_layers_A(lyr_ZRC, predio)
-if round(area_ZRC/10000,3) == round(schema[0][1],3):
-    # p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
-    sheet['H36'] = "SI X"
-    sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
-else: 
-    sheet['I36'] = f'NO X'
+# lyr_ZRC = driver.Open('Layers/ZRC_PB.shp') ##OK Capa
+# area_ZRC = intersect_layers_A(lyr_ZRC, predio)
+# if round(area_ZRC/10000,3) == round(schema[0][1],3):
+#     # p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+#     sheet['H36'] = "SI X"
+#     sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
+# else: 
+#     sheet['I36'] = f'NO X'
+
+
 
 #sheet['M34']
 lyr_bosque = driver.Open('Layers/Bosques_.shp') ##OK Capa
@@ -541,11 +544,6 @@ lyr_condiciones.append(lyr_BEMA) if intersect_layers_A(lyr_BEMA, predio) > 0 els
 
 con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda{ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2). Que el (dia) de mes de 2023, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {A_restricciones(lyr_restricciones, predio)[1]} \n \nIgualmente, se informa que el predio denominado {schema[0][4]}, se traslapa con los siguientes componentes condicionantes:{condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio. """
 # print(con_catastral)
-sheet['B53'] = con_catastral
-
-con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda  {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
-sheet['L51'] = con_agronomia
-
 
 con_juridico = f"""Con fundamento en el marco normativo establecido en la Resolución No. 20230010000036 del 12 de abril de 2023 suscrita por la Dirección General de la Agencia Nacional de Tierras y mediante la cual se expidió el Reglamento Operativo de esta entidad, se procedió a la revisión jurídica del proceso de adjudicación de predio denominado {schema[0][4]} {names_interesados(schema)[1]}. 
 
@@ -578,10 +576,12 @@ Respecto de la información de cruces con bases de datos de los solicitantes, la
 En consecuencia, la definición de inclusión ó no de los potenciales beneficiarios al RESO será confirmada con fundamento en estas valoraciones, es decir, si es procedente ó no la adjudicación del predio {schema[0][4]} a {sex_interesado(schemax[0][1])} en el informe técnico jurídico definitivo. Esta situación se establece con fundamento en el artículo 38 del Reglamento Operativo.
 
 Se concluye entonces que la solicitud cumple con los requisitos objetivos para adjudicación del predio denominado {schema[0][4]} y en consecuencia, se comunica que es viable continuar con la etapa de apertura del trámite administrativo del Procedimiento Único de Reconocimiento de Derecho del predio {schema[0][4]}, ubicado en el municipio {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, departamento {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]} {names_interesados(schema)[0]} de conformidad con el artículo 32 de la Resolución 20230010000036 del 12 de abril de 2023.""" 
-# print(con_juridico)
-sheet['B62'] = con_juridico
-save_as = f'/home/camilocorredor/DS_P/ETL/ITJP/{ID}.xlsx'
-ITJP.save(save_as)
+print(con_juridico)
+
+
+
+
+ITJP.save('/home/camilocorredor/DS_P/ETL/ITJP/Ejemplo1.xlsx')
 
 FP = time.time()
 print('Finaliza ITJP')
