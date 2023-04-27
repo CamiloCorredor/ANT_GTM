@@ -373,23 +373,23 @@ predio.AssignSpatialReference(spatial_reference)
 
 # Nombre solicitante
 
-# if len(schemaxint) == 2:  
-#     sheet['B9'] = f"""Nombre solicitante: {schemaxint[0][7]}
-# Documento de identifcación: {schemaxint[0][6]}"""
-#     sheet['R9'] = f"""Nombre solicitante: {schemaxint[1][7]}
-# Documento de identifcación: {schemaxint[1][6]}"""
-# elif len(schema) == 1:
-#     sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
-# Documento de identificación: {schema[0][3]}"""
-# else:
-#     print('Warning: Predio con mas de dos interesados')
-#Nombre del Predio
-# sheet['B19'] = f"""Nombre: {schema[0][4]}"""
-#Area predio
-# sheet['F21'] = int(schema[0][1])
-# sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
-#Cedula catastral 
-#Cargar capa predial y realizar intersect AC21
+if len(schemaxint) == 2:  
+    sheet['B9'] = f"""Nombre solicitante: {schemaxint[0][7]}
+Documento de identifcación: {schemaxint[0][6]}"""
+    sheet['R9'] = f"""Nombre solicitante: {schemaxint[1][7]}
+Documento de identifcación: {schemaxint[1][6]}"""
+elif len(schema) == 1:
+    sheet['B9'] = f"""Nombre solicitante: {schema[0][2]}
+Documento de identificación: {schema[0][3]}"""
+else:
+    print('Warning: Predio con mas de dos interesados')
+# Nombre del Predio
+sheet['B19'] = f"""Nombre: {schema[0][4]}"""
+# Area predio
+sheet['F21'] = int(schema[0][1])
+sheet['I21'] = round((float(schema[0][1]) - int(schema[0][1]))*10000,3)
+# Cedula catastral 
+# Cargar capa predial y realizar intersect AC21
 driver = ogr.GetDriverByName('ESRI Shapefile')
 lyr_condiciones = []
 lyr_restricciones = []
@@ -402,12 +402,12 @@ sheet['P19']= f"""Departamento: {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN'
 sheet['B20'] = f"""Vereda o Fracción: {ID_pred.iloc[0,1].upper()}"""
 
 
-# lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
-# data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
-# if len(data) > 1:        
-#     sheet['AC21'] = '\n'.join(data)
-# elif len(data) == 1:
-#     sheet['AC21'] = data[0]
+lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
+data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
+if len(data) > 1:        
+    sheet['AC21'] = '\n'.join(data)
+elif len(data) == 1:
+    sheet['AC21'] = data[0]
 
 #En el área solicitada se evidencian zonas de bosques
 
@@ -416,28 +416,27 @@ sheet['B20'] = f"""Vereda o Fracción: {ID_pred.iloc[0,1].upper()}"""
 # area_CR = intersect_layers_FA(lyr_CR, predio,'NOM_ZH')
 
 # ZRC 
-# lyr_ZRC = driver.Open('Layers/ZRC_PB.shp') ##OK Capa
-# area_ZRC = intersect_layers_A(lyr_ZRC, predio)
-# if round(area_ZRC/10000,3) == round(schema[0][1],3):
-#     # p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
-#     sheet['H36'] = "SI X"
-#     sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
-# else: 
-#     sheet['I36'] = f'NO X'
+lyr_ZRC = driver.Open('Layers/ZRC_PB.shp') ##OK Capa
+area_ZRC = intersect_layers_A(lyr_ZRC, predio)
+if round(area_ZRC/10000,3) == round(schema[0][1],3):
+    # p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+    sheet['H36'] = "SI X"
+    sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
+else: 
+    sheet['I36'] = f'NO X'
 
 
 
-# #sheet['M34']
-# lyr_bosque = driver.Open('Layers/Bosques_.shp') ##OK Capa
-# lyr_condiciones.append(lyr_bosque)
-# area_bosques = intersect_layers_A(lyr_bosque, predio)
-# if area_bosques > 0:
-#     sheet['K34'] = "SI X"
-#     sheet['M34'] = f"""El predio presenta traslape con un área de {round(area_bosques/10000,3)}Ha, que equivale a un {round((area_bosques/10000)/(schema[0][1])*100,3)}%, con la capa cartográfica Bosques-2010 del IDEAM"""
-#     # porc_bos = round((area_bosques/10000)/(schema[0][1])*100,3)
-#     # 
-# else:
-    # sheet['L34'] = f'NO X'
+#sheet['M34']
+lyr_bosque = driver.Open('Layers/Bosques_.shp') ##OK Capa
+lyr_condiciones.append(lyr_bosque)
+area_bosques = intersect_layers_A(lyr_bosque, predio)
+if area_bosques > 0:
+    sheet['K34'] = "SI X"
+    sheet['M34'] = f"""El predio presenta traslape con un área de {round(area_bosques/10000,3)}Ha, que equivale a un {round((area_bosques/10000)/(schema[0][1])*100,3)}%, con la capa cartográfica Bosques-2010 del IDEAM"""
+   
+else:
+    sheet['L34'] = f'NO X'
 
 # #Determinantes ambientales M35
 lyr_ds = driver.Open('Layers/Drenaje_Sencillo_(30m)_.shp') ## ##Se debe agregar todas las capas (Excel). Por ahora solo cruza con DS
@@ -510,91 +509,91 @@ for i in lyr_M37:
 print(A_restricciones(lyr_restricciones, predio))
     
 # ##El predio se encuentra dentro del radio de inadjudicabilidad de zonas donde se adelanten explotaciones de recursos naturales no renovables        
-# sheet['M38'] ##Se debe agregar todas las capas (Excel). Por ahora solo cruza con 
-# sheet['L38'] = 'NO X'
+sheet['M38'] ##Se debe agregar todas las capas (Excel). Por ahora solo cruza con 
+sheet['L38'] = 'NO X'
 
 
-# lyr_PNN = driver.Open('Layers/Parque Nacional Natural.shp') ##Por ahora solo cruza con PNN
-# lyr_M39 = []
-# lyr_M39.append(lyr_PNN)
-# for i in lyr_M39:
-#     if intersect_layers_A(i,predio) > 0:
-#         lyr_restricciones.append(lyr_PNN)
-#         sheet['K39'] = 'SI X'
-#         sheet['M39'] = f"El predio objeto de estudio presenta restricciones en un área de {round(intersect_layers_A(i,predio),2)}m2 equivalente al {round((intersect_layers_A(i,predio)/10000)/schema[0][1]*100,2)}% del predio, con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"
-#     else:
-#         sheet['L39'] = 'NO X'
+lyr_PNN = driver.Open('Layers/Parque Nacional Natural.shp') ##Por ahora solo cruza con PNN
+lyr_M39 = []
+lyr_M39.append(lyr_PNN)
+for i in lyr_M39:
+    if intersect_layers_A(i,predio) > 0:
+        lyr_restricciones.append(lyr_PNN)
+        sheet['K39'] = 'SI X'
+        sheet['M39'] = f"El predio objeto de estudio presenta restricciones en un área de {round(intersect_layers_A(i,predio),2)}m2 equivalente al {round((intersect_layers_A(i,predio)/10000)/schema[0][1]*100,2)}% del predio, con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"
+    else:
+        sheet['L39'] = 'NO X'
 
 # ##Sheet40
 
-#Cruce vias Buffer 
-# lyr_bv = driver.Open('Layers/Buffer_Vial.shp') ## Ok Capa
-# lyr_restricciones.append(lyr_bv)
-# area_bv = intersect_layers_A(lyr_bv, predio)
+# Cruce vias Buffer 
+lyr_bv = driver.Open('Layers/Buffer_Vial.shp') ## Ok Capa
+lyr_restricciones.append(lyr_bv)
+area_bv = intersect_layers_A(lyr_bv, predio)
 
-# if area_bv > 0:
-#     sheet['K40'] = "SI X"
-#     sheet['M40'] = f"""El predio presenta traslape con un área de {round(area_bv/10000,2)}Ha, que equivale a un {round((area_bv/10000)/(schema[0][1])*100,2)}%, con faja de retiro de la vía de primer orden Transversal Neiva - San Vicente"""
-#     # bv = round((area_bv/10000)/(schema[0][1])*100,3)
-#     # area_bf = round(area_bv/10000,3)
+if area_bv > 0:
+    sheet['K40'] = "SI X"
+    sheet['M40'] = f"""El predio presenta traslape con un área de {round(area_bv/10000,2)}Ha, que equivale a un {round((area_bv/10000)/(schema[0][1])*100,2)}%, con faja de retiro de la vía de primer orden Transversal Neiva - San Vicente"""
+    # bv = round((area_bv/10000)/(schema[0][1])*100,3)
+    # area_bf = round(area_bv/10000,3)
   
-# else: 
-#     sheet['L40'] = f'NO X'
+else: 
+    sheet['L40'] = f'NO X'
 
-# ##Condicionante
-# lyr_ZM = driver.Open('Layers/ZONIFICACION_MANEJO.shp') ##Zonificación Manejo
-# lyr_condiciones.append(lyr_ZM) if intersect_layers_A(lyr_ZM, predio) > 0 else None
+##Condicionante
+lyr_ZM = driver.Open('Layers/ZONIFICACION_MANEJO.shp') ##Zonificación Manejo
+lyr_condiciones.append(lyr_ZM) if intersect_layers_A(lyr_ZM, predio) > 0 else None
 
-# lyr_deg_s = driver.Open('Layers/Degradacion_suelo.shp') ##Degradación suelo
-# lyr_condiciones.append(lyr_deg_s) if intersect_layers_A(lyr_deg_s, predio) > 0 else None
+lyr_deg_s = driver.Open('Layers/Degradacion_suelo.shp') ##Degradación suelo
+lyr_condiciones.append(lyr_deg_s) if intersect_layers_A(lyr_deg_s, predio) > 0 else None
 
-# lyr_ZSI = driver.Open('Layers/ZONAS_SUSCEPTIBLES_INUNDACION.shp') ##Zonas Susceptibles Inundación
-# lyr_condiciones.append(lyr_ZSI) if intersect_layers_A(lyr_ZSI, predio) > 0 else None
+lyr_ZSI = driver.Open('Layers/ZONAS_SUSCEPTIBLES_INUNDACION.shp') ##Zonas Susceptibles Inundación
+lyr_condiciones.append(lyr_ZSI) if intersect_layers_A(lyr_ZSI, predio) > 0 else None
 
-# lyr_AFPC = driver.Open('Layers/UNIDAD_AGRICOLA_FAMILIAR_PROCESO_CONSTITUCION.shp')
-# lyr_condiciones.append(lyr_AFPC) if intersect_layers_A(lyr_AFPC, predio) > 0 else None
+lyr_AFPC = driver.Open('Layers/UNIDAD_AGRICOLA_FAMILIAR_PROCESO_CONSTITUCION.shp')
+lyr_condiciones.append(lyr_AFPC) if intersect_layers_A(lyr_AFPC, predio) > 0 else None
 
-# lyr_SMV = driver.Open('Layers/SOLICITU_MINERA_VIGENTE.shp')
-# lyr_condiciones.append(lyr_SMV) if intersect_layers_A(lyr_SMV, predio) > 0 else None
+lyr_SMV = driver.Open('Layers/SOLICITU_MINERA_VIGENTE.shp')
+lyr_condiciones.append(lyr_SMV) if intersect_layers_A(lyr_SMV, predio) > 0 else None
 
-# # lyr_l2 = driver.Open('Layers/Ley2.shp')
-# # lyr_condiciones.append(lyr_l2)
+# lyr_l2 = driver.Open('Layers/Ley2.shp')
+# lyr_condiciones.append(lyr_l2)
 
-# lyr_PSM = driver.Open('Layers/PREDIO_SIN_MATRICULA.shp')
-# lyr_condiciones.append(lyr_PSM) if intersect_layers_A(lyr_PSM, predio) > 0 else None
+lyr_PSM = driver.Open('Layers/PREDIO_SIN_MATRICULA.shp')
+lyr_condiciones.append(lyr_PSM) if intersect_layers_A(lyr_PSM, predio) > 0 else None
 
-# lyr_MTH = driver.Open('Layers/MAPA_TIERRAS_HIDROCARBUROS.shp')
-# lyr_condiciones.append(lyr_MTH) if intersect_layers_A(lyr_MTH, predio) > 0 else None
+lyr_MTH = driver.Open('Layers/MAPA_TIERRAS_HIDROCARBUROS.shp')
+lyr_condiciones.append(lyr_MTH) if intersect_layers_A(lyr_MTH, predio) > 0 else None
 
-# lyr_H = driver.Open('Layers/HUMEDAL.shp')
-# lyr_condiciones.append(lyr_H) if intersect_layers_A(lyr_H, predio) > 0 else None
+lyr_H = driver.Open('Layers/HUMEDAL.shp')
+lyr_condiciones.append(lyr_H) if intersect_layers_A(lyr_H, predio) > 0 else None
 
-# lyr_HTMMP = driver.Open('Layers/HISTORICO_TITULO_MINERO_MUNICIPIO_PRIORIZADO.shp')
-# lyr_condiciones.append(lyr_HTMMP) if intersect_layers_A(lyr_HTMMP, predio) > 0 else None
+lyr_HTMMP = driver.Open('Layers/HISTORICO_TITULO_MINERO_MUNICIPIO_PRIORIZADO.shp')
+lyr_condiciones.append(lyr_HTMMP) if intersect_layers_A(lyr_HTMMP, predio) > 0 else None
 
-# lyr_HSMMP = driver.Open('Layers/HISTORICO_SOLICITUD_MINERA_MUNICIPIO_PRIORIZADO.shp')
-# lyr_condiciones.append(lyr_HSMMP) if intersect_layers_A(lyr_HSMMP, predio) > 0 else None
+lyr_HSMMP = driver.Open('Layers/HISTORICO_SOLICITUD_MINERA_MUNICIPIO_PRIORIZADO.shp')
+lyr_condiciones.append(lyr_HSMMP) if intersect_layers_A(lyr_HSMMP, predio) > 0 else None
 
-# lyr_FA = driver.Open('Layers/FRONTERA_AGRICOLA.shp')
-# lyr_condiciones.append(lyr_FA) if intersect_layers_A(lyr_FA, predio) > 0 else None
+lyr_FA = driver.Open('Layers/FRONTERA_AGRICOLA.shp')
+lyr_condiciones.append(lyr_FA) if intersect_layers_A(lyr_FA, predio) > 0 else None
 
-# lyr_ELTA = driver.Open('Layers/ESTADO_LEGAL_TERRITORIO_AMAZONICO.shp')
-# lyr_condiciones.append(lyr_ELTA) if intersect_layers_A(lyr_ELTA, predio) > 0 else None
+lyr_ELTA = driver.Open('Layers/ESTADO_LEGAL_TERRITORIO_AMAZONICO.shp')
+lyr_condiciones.append(lyr_ELTA) if intersect_layers_A(lyr_ELTA, predio) > 0 else None
 
-# lyr_CS = driver.Open('Layers/CORRELACION_SUELO.shp')
-# lyr_condiciones.append(lyr_CS) if intersect_layers_A(lyr_CS, predio) > 0 else None
+lyr_CS = driver.Open('Layers/CORRELACION_SUELO.shp')
+lyr_condiciones.append(lyr_CS) if intersect_layers_A(lyr_CS, predio) > 0 else None
 
-# lyr_CP = driver.Open('Layers/Centro_poblado.shp')
-# lyr_condiciones.append(lyr_CP) if intersect_layers_A(lyr_CP, predio) > 0 else None
+lyr_CP = driver.Open('Layers/Centro_poblado.shp')
+lyr_condiciones.append(lyr_CP) if intersect_layers_A(lyr_CP, predio) > 0 else None
 
-# lyr_BVMA = driver.Open('Layers/BUFFER_VICTIMA_MINA_ANTIPERSONA.shp')
-# lyr_condiciones.append(lyr_BVMA) if intersect_layers_A(lyr_BVMA, predio) > 0 else None
+lyr_BVMA = driver.Open('Layers/BUFFER_VICTIMA_MINA_ANTIPERSONA.shp')
+lyr_condiciones.append(lyr_BVMA) if intersect_layers_A(lyr_BVMA, predio) > 0 else None
 
-# lyr_BEMA = driver.Open('Layers/BUFFER_EVENTO_MINA_ANTIPERSONA.shp')
-# lyr_condiciones.append(lyr_BEMA) if intersect_layers_A(lyr_BEMA, predio) > 0 else None
+lyr_BEMA = driver.Open('Layers/BUFFER_EVENTO_MINA_ANTIPERSONA.shp')
+lyr_condiciones.append(lyr_BEMA) if intersect_layers_A(lyr_BEMA, predio) > 0 else None
 
-# lyr_RM = driver.Open('Layers/remocion_en_masa.shp')
-# lyr_restricciones.append(lyr_RM)
+lyr_RM = driver.Open('Layers/remocion_en_masa.shp')
+lyr_restricciones.append(lyr_RM)
 
 
 
@@ -632,10 +631,7 @@ Respecto de la información de cruces con bases de datos de los solicitantes, la
 En consecuencia, la definición de inclusión ó no de los potenciales beneficiarios al RESO será confirmada con fundamento en estas valoraciones, es decir, si es procedente ó no la adjudicación del predio {schema[0][4]} a {sex_interesado(schemax[0][1])} en el informe técnico jurídico definitivo. Esta situación se establece con fundamento en el artículo 38 del Reglamento Operativo.
 
 Se concluye entonces que la solicitud cumple con los requisitos objetivos para adjudicación del predio denominado {schema[0][4]} y en consecuencia, se comunica que es viable continuar con la etapa de apertura del trámite administrativo del Procedimiento Único de Reconocimiento de Derecho del predio {schema[0][4]}, ubicado en el municipio {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, departamento {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]} {names_interesados(schema)[0]} de conformidad con el artículo 32 de la Resolución 20230010000036 del 12 de abril de 2023.""" 
-print(con_juridico)
-
-
-
+#print(con_juridico)
 
 ITJP.save('/home/camilocorredor/DS_P/ETL/ITJP/Ejemplo1.xlsx')
 
