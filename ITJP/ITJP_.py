@@ -294,7 +294,7 @@ def A_restricciones(list_lyrs, object_XTF):
                 # print(type(intersect_layers_FA(i,predio,'CATAME','Muy Alta')[1]))
             else:
                 pass
-        elif os.path.splitext(os.path.basename(i.GetName()))[0] != 'remocion_en_masa' and os.path.splitext(os.path.basename(i.GetName()))[0] != 'Drenaje_Sencillo_(30m)_' and  os.path.splitext(os.path.basename(i.GetName()))[0] == 'SOLICITUD_INGRESO_RTDAF' and intersect_layers_A(i,object_XTF)[0] > 0:
+        elif os.path.splitext(os.path.basename(i.GetName()))[0] != 'remocion_en_masa' and os.path.splitext(os.path.basename(i.GetName()))[0] != 'Drenaje_Sencillo_(30m)_' and  os.path.splitext(os.path.basename(i.GetName()))[0] != 'SOLICITUD_INGRESO_RTDAF' and intersect_layers_A(i,object_XTF)[0] > 0:
             lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
             poly = intersect_layers_A(i,object_XTF)[1]
             if isinstance(poly,osgeo.ogr.Geometry):
@@ -304,6 +304,7 @@ def A_restricciones(list_lyrs, object_XTF):
             # print(type(intersect_layers_A(i,object_XTF)[1]))
         else:
             pass
+    
 
     # Suma_area = sum(Sum_area)/10000
     lyr_restricciones = list(set(lyr_restricciones))
@@ -348,8 +349,8 @@ def condiciones(list):
     return string 
 
 
-path_xlsx = 'F110_ITJP_230324_5035000229_202222010699805382E.xlsx'
-ID = path_xlsx.split('_')[3]
+path_xlsx = 'Tec/ACCTI- F110 - ITJ EJ.xlsx'
+ID = input('Ingrese ID del predio: ')
 ITJP = openpyxl.load_workbook(path_xlsx)
  
 
@@ -358,14 +359,23 @@ ID_pred_ = juridico_pd.loc[juridico_pd['ID'] == int(ID)]
 agronomia_pd = pd.read_excel('Source_Concepts/UAF.xlsx')
 ID_pred = agronomia_pd.loc[agronomia_pd['ID'] == int(ID)]
 
+
 date_ = datetime.strptime(str(ID_pred.iloc[0,7]), '%Y-%m-%d %H:%M:%S')
 date = date_.strftime('%d/%m/%Y')
 
-date_LV = datetime.strptime(str(ID_pred_.iloc[0,2]), '%Y-%m-%d %H:%M:%S')
+from datetime import datetime, timedelta
+excel_start_date = datetime(1900, 1, 1)
+date_ = ID_pred_.iloc[0,2]
+delta = timedelta(days = date_)
+date_ = excel_start_date + delta 
 date_LV = date_.strftime('%d/%m/%Y')
 
-date_FA = datetime.strptime(str(ID_pred_.iloc[0,3]), '%Y-%m-%d %H:%M:%S')
+date_ = datetime.strptime(str(ID_pred_.iloc[0,3]), '%Y-%m-%d %H:%M:%S')
 date_FA = date_.strftime('%d/%m/%Y')
+
+date_ = datetime.strptime(str(ID_pred_.iloc[0,6]), '%Y-%m-%d %H:%M:%S')
+date_F007 = date_.strftime('%d/%m/%Y')
+
 
 list_lyr = []
 # ID_pred_ = np.array(ID_pred)
@@ -433,8 +443,6 @@ where P.id_operacion = '{ID}'"""
 cursor.execute(sql_int)
 schemaxint = cursor.fetchall()
 
-
-
 sheet = ITJP['Hoja1']
 
 hex_wkb = schema[0][5]
@@ -485,9 +493,9 @@ sheet['B20'] = f"""Vereda o Fracción: {ID_pred.iloc[0,1].upper()}"""
 lyr_Terreno = driver.Open('Layers/R_Terreno.shp') ##OK Capa
 data = intersect_layers_F(lyr_Terreno, predio, 'codigo')
 if len(data) > 1:        
-    sheet['AD21'] = '\n'.join(data)
+    sheet['AC21'] = '\n'.join(data)
 elif len(data) == 1:
-    sheet['AD21'] = data[0]
+    sheet['AC21'] = data[0]
 
 #En el área solicitada se evidencian zonas de bosques
 
@@ -500,6 +508,7 @@ lyr_ZRC = driver.Open('Layers/ZRC_PB.shp') ##OK Capa
 area_ZRC = intersect_layers_A(lyr_ZRC, predio)[0]
 if round(area_ZRC/10000,3) == round(schema[0][1],3):
     # p_zrc = round((intersect.Area()/10000)/(schema[0][1])*100,3)
+    lyr_condiciones.append(lyr_ZRC)
     sheet['H36'] = "SI X"
     sheet['J36'] = f"""Zona de reserva campesina del Pato Balsillas"""
 else: 
@@ -549,6 +558,7 @@ for i in lyr_M35:
         # area_ds = round(intersect.Area()/10000,3)
     elif a_0 <= 0 and a_1 <= 0:
         sheet['L35'] = 'NO X'
+        sheet['M35'] = ' '
         
     else: 
         pass       
@@ -612,7 +622,8 @@ area_bv = intersect_layers_A(lyr_bv, predio)[0]
 
 if area_bv > 0:
     sheet['K40'] = "SI X"
-    sheet['M40'] = f"""(Pendiente oficio de INVIAS)El predio presenta traslape con un área de {round(area_bv/10000,2)}Ha, que equivale a un {round((area_bv/10000)/(schema[0][1])*100,2)}%, con faja de retiro de la vía de primer orden Transversal Neiva - San Vicente"""
+    sheet['M40'] = f"""El predio presenta traslape con un área de {round(area_bv/10000,2)}Ha, que equivale a un {round((area_bv/10000)/(schema[0][1])*100,2)}%, con faja de retiro de la vía de primer orden Transversal Neiva - San Vicente"""
+    lyr_restricciones.append(lyr_bv)
     # bv = round((area_bv/10000)/(schema[0][1])*100,3)
     # area_bf = round(area_bv/10000,3)
   
@@ -639,6 +650,9 @@ lyr_condiciones.append(lyr_SMV) if intersect_layers_A(lyr_SMV, predio)[0] > 0 el
 
 # lyr_l2 = driver.Open('Layers/Ley2.shp')
 # lyr_condiciones.append(lyr_l2)
+
+lyr_CR = driver.Open('Layers/Cuenca_Rios.shp') ##OK Capa
+lyr_condiciones.append(lyr_CR) if intersect_layers_A(lyr_CR, predio)[0] > 0 else None
 
 lyr_PSM = driver.Open('Layers/PREDIO_SIN_MATRICULA.shp')
 lyr_condiciones.append(lyr_PSM) if intersect_layers_A(lyr_PSM, predio)[0] > 0 else None
@@ -676,15 +690,16 @@ lyr_condiciones.append(lyr_BEMA) if intersect_layers_A(lyr_BEMA, predio)[0] > 0 
 lyr_RM = driver.Open('Layers/remocion_en_masa.shp')
 lyr_restricciones.append(lyr_RM)
 
+lyr_SL2 = driver.Open('Layers/RESERVA FORESTAL LEY SEGUNDA SUSTRACCIONES.shp')
+lyr_condiciones.append(lyr_SL2) if intersect_layers_A(lyr_SL2, predio)[0] > 0 else None
 
-
-con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda{ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2). Que el (dia) de mes de 2023, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {A_restricciones(lyr_restricciones, predio)[1]} \n \nIgualmente, se informa que el predio denominado {schema[0][4]}, se traslapa con los siguientes componentes condicionantes:{condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio."""
+con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2). Que el {date_F007}, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {A_restricciones(lyr_restricciones, predio)[1]} \n \nIgualmente, se informa que el predio denominado {schema[0][4]}, se traslapa con los siguientes componentes condicionantes:{condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio."""
 sheet['B53'] = con_catastral
 # print(con_catastral)
 
-
 con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
 sheet['L51'] = con_agronomia
+sheet['Q26'] = cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])
 
 con_juridico = f"""Con fundamento en el marco normativo establecido en la Resolución No. 20230010000036 del 12 de abril de 2023 suscrita por la Dirección General de la Agencia Nacional de Tierras y mediante la cual se expidió el Reglamento Operativo de esta entidad, se procedió a la revisión jurídica del proceso de adjudicación de predio denominado {schema[0][4]} {names_interesados(schema)[1]}. 
 
@@ -699,7 +714,7 @@ se identificaron los siguientes elementos:
 
 * Que tiene un área de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2),
 * Que se encuentra ubicado en el municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}; 
-* Que se identificaron cada uno de los linderos y colindancias del predio, contenidos en la Redacción Técnica de Linderos (F-009) de fecha (FALTA FECHA) 
+* Que se identificaron cada uno de los linderos y colindancias del predio, contenidos en la Redacción Técnica de Linderos (F-009).
 * Que de acuerdo con el Cruce de Información Geográfica (F-007), el predio {A_restricciones(lyr_restricciones, predio)[1]}
 * Igualmente, se evidenció que el predio denominado {schema[0][4]}, traslapa con los siguientes componentes condicionantes: {condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área de potencial y/o útil de titulación del predio.
 
@@ -719,7 +734,7 @@ En consecuencia, la definición de inclusión ó no de los potenciales beneficia
 Se concluye entonces que la solicitud cumple con los requisitos objetivos para adjudicación del predio denominado {schema[0][4]} y en consecuencia, se comunica que es viable continuar con la etapa de apertura del trámite administrativo del Procedimiento Único de Reconocimiento de Derecho del predio {schema[0][4]}, ubicado en el municipio {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, departamento {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]} {names_interesados(schema)[0]} de conformidad con el artículo 32 de la Resolución 20230010000036 del 12 de abril de 2023.""" 
 #print(con_juridico)
 sheet['B62'] = con_juridico
-path_out = f'{ID}.xlsx'
+path_out = f'Tec/{ID}.xlsx'
 ITJP.save(path_out)
 
 FP = time.time()
