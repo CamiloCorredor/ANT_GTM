@@ -351,8 +351,8 @@ def condiciones(list):
         string = name_lyrs[0]
     return string 
 
-# vector_ID = ['5035005210','5035005211','5035005212','5035005213','5035000001']
-vector_ID = ['5035005215']
+vector_ID = ['5035005215','5035005217','5035005221']
+# vector_ID = ['5035005215']
 for ID in vector_ID:
     print(f'Informe Técnico Jurídico Preliminar {ID}')
     path_xlsx = 'Tec/ACCTI- F110 - ITJ EJ.xlsx'
@@ -657,6 +657,10 @@ for ID in vector_ID:
     # lyr_l2 = driver.Open('Layers/Ley2.shp')
     # lyr_condiciones.append(lyr_l2)
 
+    lyr_EMA = driver.Open('Layers/EVENTO_MINA_ANTIPERSONA.shp')
+    lyr_condiciones.append(lyr_EMA) if intersect_layers_A(lyr_EMA, predio)[0] > 0 else None
+    
+
     lyr_CR = driver.Open('Layers/Cuenca_Rios.shp') ##OK Capa
     lyr_condiciones.append(lyr_CR) if intersect_layers_A(lyr_CR, predio)[0] > 0 else None
 
@@ -687,6 +691,9 @@ for ID in vector_ID:
     lyr_CP = driver.Open('Layers/Centro_poblado.shp')
     lyr_condiciones.append(lyr_CP) if intersect_layers_A(lyr_CP, predio)[0] > 0 else None
 
+    Lyr_ZRC_PC = driver.Open('Layers/ZRC_PROCESO_CONSTITUCION.shp')
+    lyr_condiciones.append(Lyr_ZRC_PC) if intersect_layers_A(Lyr_ZRC_PC, predio)[0] > 0 else None
+
     lyr_BVMA = driver.Open('Layers/BUFFER_VICTIMA_MINA_ANTIPERSONA.shp')
     lyr_condiciones.append(lyr_BVMA) if intersect_layers_A(lyr_BVMA, predio)[0] > 0 else None
 
@@ -709,7 +716,7 @@ for ID in vector_ID:
     con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
     sheet['L51'] = con_agronomia
     sheet['Q26'] = f"""Porción Cultivada o explotada:{cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}"""
-    print(f"""Porción Cultivada o explotada:{cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}""")
+    
     con_juridico = f"""Con fundamento en el marco normativo establecido en la Resolución No. 20230010000036 del 12 de abril de 2023 suscrita por la Dirección General de la Agencia Nacional de Tierras y mediante la cual se expidió el Reglamento Operativo de esta entidad, se procedió a la revisión jurídica del proceso de adjudicación de predio denominado {schema[0][4]} {names_interesados(schema)[1]}. 
 
     Para todos los fines de este documento se comprende que los documentos, planos, soportes técnicos y /o oficios del caso que se relacionan a continuación fueron identificados y ubicados en el expediente No. {ID_pred_.iloc[0,1]} de los sistemas de información SIT y ORFEO de la Agencia Nacional de Tierras.
