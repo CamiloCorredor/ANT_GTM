@@ -134,7 +134,8 @@ def cultivos(lis_t1, lis_t2):
         for cultivos_, cultivos_porc_ in zip(cultivos_, cultivos_porc_):
             strg += f"{cultivos_} - {cultivos_porc_}%, "
     else:
-        print(f'{cultivos_[0]} - {lis_t2}%')
+        strg = f'{cultivos_[0]} - {lis_t2}%'
+    
     
     return strg
     
@@ -272,6 +273,18 @@ def A_restricciones(list_lyrs, object_XTF):
                 # print(type(intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]))
             else:
                 pass
+        
+        elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'DRENAJE_DOBLE':
+            if intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[0] > 0:
+                lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
+                poly = intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]
+                if isinstance(poly, osgeo.ogr.Geometry):
+                    poly_intersect.append(poly)
+                else:
+                    print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
+                # print(type(intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]))
+            else:
+                pass
 
         elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'remocion_en_masa':
             if intersect_layers_FA(i,predio,'CATAME','Alta')[0] > 0:
@@ -351,9 +364,9 @@ def condiciones(list):
         string = name_lyrs[0]
     return string 
 
-# vector_ID =['5035000202', '5035000260', '5035000322', '5035005108', '5035005120', '5035005122', '5035005123','5035005133', '5035005134',  '5035005135', '5035005137', '5035005211','5035006139','5035006150','5035006152','5035006153','5035006244','5035006256','5035006518','5035006521','5035006522','5035006533','5035006534','5035006535','5035006538','5035006599','5035010003','5035010022','5035010033','5035010502','5035010504','5035010507','5035010509','5035010510','5035010511','5035010512','5035010515','5035010516','5035010551','5035010572','5035010573','5035010574','5035010576','5035010579','5035010605','5035010627','5035010678','5035010700','5035010702','5035010703','5035010704','5035010705','5035010718','5035010719','5035010854','5035010858','5035010901']
+# vector_ID =['5035000202', '5035000322', '5035010566']
 
-vector_ID = ['5035005102']
+vector_ID = ['5035010016']
 for ID in vector_ID:
     print(f'Informe Técnico Jurídico Preliminar {ID}')
     path_xlsx = 'Tec/ACCTI- F110 - ITJ EJ.xlsx'
@@ -539,7 +552,8 @@ for ID in vector_ID:
     lyr_dd = driver.Open('Layers/DRENAJE_DOBLE.shp')
     lyr_M35 = []
     lyr_M35.append(lyr_ds)
-    # lyr_M35.append(lyr_dd)
+    lyr_M35.append(lyr_dd)
+    strng = ''
     for i in lyr_M35:
 
         a_0 = intersect_layers_FA(i, predio, 'NOMBRE_GEO', None)[0] ##Iguales
@@ -549,17 +563,22 @@ for ID in vector_ID:
             lyr_restricciones.append(i)
             lyr_condiciones.append(i)
             sheet['K35'] = "SI X"
-            sheet['M35'] = f"""El predio presenta restricciones en un área de {round(a_1/10000,2)}Ha, que equivale a un {round((a_1/10000)/(schema[0][1])*100,2)}%. Adicionalmente, presenta condicionantes en un área de {round(a_0/10000,2)}Ha, que equivade a un {round((a_0/10000)/(schema[0][1])*100,2)}%, lo anterior en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"""
+            sheet['M35'] = f""""""
+            strng = strng + f'El predio presenta restricciones en un área de {round(a_1/10000,2)}Ha, que equivale a un {round((a_1/10000)/(schema[0][1])*100,2)}%. Adicionalmente, presenta condicionantes en un área de {round(a_0/10000,2)}Ha, que equivade a un {round((a_0/10000)/(schema[0][1])*100,2)}%, lo anterior en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}'
+            sheet['M35'] = strng
             # print(f"""El predio presenta restricciones en un área de {round(a_1/10000,2)}Ha, que equivale a un {round((a_1/10000)/(schema[0][1])*100,2)}%. Adicionalmente, presenta condicionantes en un área de {round(a_0/10000,2)}Ha, que equivade a un {round((a_0/10000)/(schema[0][1])*100,2)}%, lo anterior en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}""")
         elif a_1 > 0 and a_0 <= 0:
             lyr_restricciones.append(i)
             sheet['K35'] = "SI X"
-            sheet['M35'] = f"""El predio presenta restricciones en un área de {round(a_1/10000,2)}Ha, que equivale a un {round((a_1/10000)/(schema[0][1])*100,2)}% en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"""
+            strng = strng + f"""El predio presenta restricciones en un área de {round(a_1/10000,2)}Ha, que equivale a un {round((a_1/10000)/(schema[0][1])*100,2)}% en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"""
+            sheet['M35'] = strng
 
         elif a_1 <= 0 and a_0 > 0:
             lyr_condiciones.append(i)
             sheet['K35'] = "SI X"
-            sheet['M35'] = f"""El predio presenta condicionantes en un área de {round(a_0/10000,2)}Ha, que equivale a un {round((a_0/10000)/(schema[0][1])*100,2)}% en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"""
+            strng = strng + f"""El predio presenta condicionantes en un área de {round(a_0/10000,2)}Ha, que equivale a un {round((a_0/10000)/(schema[0][1])*100,2)}% en relación con la capa cartográfica {os.path.splitext(os.path.basename(i.GetName()))[0]}"""
+            sheet['M35'] = strng
+
 
             # ds = round((intersect.Area()/10000)/(schema[0][1])*100,3)
             # area_ds = round(intersect.Area()/10000,3)
@@ -712,9 +731,10 @@ for ID in vector_ID:
 
     con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2). Que el {date_F007}, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {A_restricciones(lyr_restricciones, predio)[1]} \n \nIgualmente, se informa que el predio denominado {schema[0][4]}, se traslapa con los siguientes componentes condicionantes:{condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio."""
     sheet['B53'] = con_catastral
-    # print(con_catastral)
+    
 
     con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
+    print(cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4]))
     sheet['L51'] = con_agronomia
     sheet['Q26'] = f"""Porción Cultivada o explotada:{cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}"""
     
