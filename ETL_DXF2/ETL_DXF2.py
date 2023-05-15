@@ -14,10 +14,10 @@ for file in files:
         for layer in layers['Layer'].unique():
             layer_df = layers[layers['Layer'] == layer]
             layer_df = layer_df.set_crs("EPSG:3115")
-            # Append the current layer to the all_layers GeoDataFrame
+            
             all_layers = all_layers.append(layer_df)
 
-# Save the all_layers GeoDataFrame to a single GeoPackage file
+
 all_layers.to_file('all_layers.gpkg', driver='GPKG')
 
 print('Ejecución Finalizada')
