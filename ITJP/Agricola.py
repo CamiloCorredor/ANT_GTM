@@ -108,3 +108,18 @@ class agricola:
             print('Sin clasificación')
 
         return range
+
+
+    def cultivos(lis_t1, lis_t2):
+        strg = ''              
+        cultivos = lis_t1 
+        cultivos_ = cultivos.split(", ")
+
+        if len(cultivos_) >= 2:
+            cultivos_porc = lis_t2
+            cultivos_porc_ = cultivos_porc.split(",")
+            for cultivos_, cultivos_porc_ in zip(cultivos_, cultivos_porc_):
+                strg += f"{cultivos_} - {cultivos_porc_}%, "
+        else:
+            strg = f'{cultivos_[0]} - {lis_t2}%'
+        return strg

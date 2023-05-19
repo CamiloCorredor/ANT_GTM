@@ -1,5 +1,4 @@
 import time
-from unicodedata import name
 BP = time.time()
 print('Iniciando ITJP ...')
 from ctypes import c_char_p
@@ -13,7 +12,7 @@ import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gpd
 
-import psycopg2
+
 
 from shapely.wkb import loads
 from shapely import wkb
@@ -25,8 +24,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-
-from num2words import num2words
+with open('paths.json') as file:
+    # Load the JSON data
+    data = json.load(file)
 
 from datetime import datetime
 
@@ -38,159 +38,29 @@ from SQL_LADM import SQL_LADM
 
 from Agricola import agricola
 
-
-# def cultivos(lis_t1, lis_t2):
-#     strg = ''
-          
-#     cultivos = lis_t1 
-#     cultivos_ = cultivos.split(", ")
-    
-#     if len(cultivos_) >= 2:
-#         cultivos_porc = lis_t2
-#         cultivos_porc_ = cultivos_porc.split(",")
-#         for cultivos_, cultivos_porc_ in zip(cultivos_, cultivos_porc_):
-#             strg += f"{cultivos_} - {cultivos_porc_}%, "
-#     else:
-#         strg = f'{cultivos_[0]} - {lis_t2}%'
-    
-    
-#     return strg
-    
-            
-#
-
-# def A_restricciones(list_lyrs, object_XTF):
-#     lyr_restricciones = []
-#     poly_intersect = []
-#     union_geom = ogr.Geometry(ogr.wkbMultiPolygon)
-    
-#     for i in list_lyrs:
-#         if os.path.splitext(os.path.basename(i.GetName()))[0] == 'SOLICITUD_INGRESO_RTDAF':
-#             if intersect_layers_FA(i, predio,'estado_tra', 'Sentencia')[0] > 0:
-#                 lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#                 poly = intersect_layers_FA(i, predio,'estado_tra', 'Sentencia')[1]
-#                 if isinstance(poly,osgeo.ogr.Geometry):
-#                     poly_intersect.append(poly)
-#                 else:
-#                     print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-#                 # print(intersect_layers_FA(i, predio,'estado_tra', 'Sentencia')[1])
-#             else:
-#                 pass
-
-#         elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'Drenaje_Sencillo_(30m)_':
-#             if intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[0] > 0:
-#                 lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#                 poly = intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]
-#                 if isinstance(poly, osgeo.ogr.Geometry):
-#                     poly_intersect.append(poly)
-#                 else:
-#                     print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-#                 # print(type(intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]))
-#             else:
-#                 pass
-        
-#         elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'DRENAJE_DOBLE':
-#             if intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[0] > 0:
-#                 lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#                 poly = intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]
-#                 if isinstance(poly, osgeo.ogr.Geometry):
-#                     poly_intersect.append(poly)
-#                 else:
-#                     print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-#                 # print(type(intersect_layers_FA_dif(i,predio,'NOMBRE_GEO',None)[1]))
-#             else:
-#                 pass
-
-#         elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'remocion_en_masa':
-#             if intersect_layers_FA(i,predio,'CATAME','Alta')[0] > 0:
-#                 lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#                 poly = intersect_layers_FA(i,predio,'CATAME','Alta')[1]
-#                 if isinstance(poly,osgeo.ogr.Geometry):
-#                     poly_intersect.append(poly)
-#                 else:
-#                     print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-#                 # print(type(intersect_layers_FA(i,predio,'CATAME','Alta')[1]))
-#             else:
-#                 pass
-#         elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'remocion_en_masa':
-#             if intersect_layers_FA(i,predio,'CATAME','Muy Alta')[0] > 0:
-#                 lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#                 poly = intersect_layers_FA(i,predio,'CATAME','Muy Alta')[1]
-#                 if isinstance(poly,osgeo.ogr.Geometry):
-#                     poly_intersect.append(poly)
-#                 else:
-#                     print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-                
-#                 # print(type(intersect_layers_FA(i,predio,'CATAME','Muy Alta')[1]))
-#             else:
-#                 pass
-#         elif os.path.splitext(os.path.basename(i.GetName()))[0] != 'remocion_en_masa' and os.path.splitext(os.path.basename(i.GetName()))[0] != 'Drenaje_Sencillo_(30m)_' and  os.path.splitext(os.path.basename(i.GetName()))[0] != 'SOLICITUD_INGRESO_RTDAF' and intersect_layers_A(i,object_XTF)[0] > 0:
-#             lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-#             poly = intersect_layers_A(i,object_XTF)[1]
-#             if isinstance(poly,osgeo.ogr.Geometry):
-#                 poly_intersect.append(poly)
-#             else:
-#                 print(f"Invalid type {type(poly)} for layer {os.path.splitext(os.path.basename(i.GetName()))[0]}. Skipping...")
-#             # print(type(intersect_layers_A(i,object_XTF)[1]))
-#         else:
-#             pass
-    
-
-#     # Suma_area = sum(Sum_area)/10000
-#     lyr_restricciones = list(set(lyr_restricciones))
-#     for geom in poly_intersect:
-#         union_geom = union_geom.Union(geom)
-
-#     Suma_area = union_geom.Area()/10000
+from BIP import BIP
 
 
-#     if len(lyr_restricciones) > 0:
-#         AU = schema[0][1] - Suma_area
-#         strg = f"""cuenta con las siguientes restricciones ambientales o de Ley: {', '.join(lyr_restricciones[:-1]) + ' y ' + lyr_restricciones[-1]} \n \nAsí las cosas, se tiene que el área que se superpone con estas prohibiciones o restricciones legales corresponde a {(num2words(round((int(Suma_area))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(Suma_area) - int(Suma_area))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(Suma_area)))}Ha + {round((float(Suma_area) - int(Suma_area))*10000,2)}m2). """
-#         strg = strg + f"""En virtud de estos traslapes, la titulación del 100% del área solicitada queda supeditada a la respuesta que emita la entidad correspondiente."""
-#         ##El área del predio afectada por estas restricciones corresponde a {(num2words(round((int(Suma_area))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(AU) - int(Suma_area))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(Suma_area)))}Ha + {round((float(Suma_area) - int(Suma_area))*10000,2)}m2)
-#     else: 
-#         strg = 'NO cuenta con traslapes o restricciones ambientales de Ley'
-
-#     return Suma_area, strg
-
-# def names_interesados(schema):
-
-#     if schema[0][7] == None:
-#         str_name = f"solicitado por {sex_interesado(schemax[0][1])} {schema[0][2]}"
-#         str_all = str_name + f" con cédula de ciudadania No {schema[0][3]}"
-#     elif schema[0][7] == 'Grupo civil':
-#         str_name = f"solicitado por {sex_interesado(schemax[0][1])} {schemaxint[0][7]} y {schemaxint[1][7]}"
-#         str_all = str_name + f"identificados con cédula de ciudadania {schemaxint[0][6]} y {schemaxint[1][6]}, respectivamente"
-#     else: 
-#         print('Warning: Predio con > 2 solicitantes')
-    
-#     return str_name, str_all
-
-# def condiciones(list):
-    
-#     name_lyrs = []
-#     for i in list:
-#         name_lyrs.append(os.path.splitext(os.path.basename(i.GetName()))[0])
-    
-#     if len(name_lyrs) > 1:
-#         string = ', '.join(name_lyrs[:-1]) + ' y ' + name_lyrs[-1]
-#     else:
-#         string = name_lyrs[0]
-#     return string 
 
 # vector_ID =['5035000202', '5035000322', '5035010566']
 
-vector_ID = ['5035010016']
+
+
+vector_ID = ['5035010005']
+
 for ID in vector_ID:
+
+    object_agronomia = BIP(data[1]["UAF"], ID)
+    object_juridico = BIP(data[1]["agronomia"], ID)
+    
+    
     print(f'Informe Técnico Jurídico Preliminar {ID}')
-    path_xlsx = 'Tec/ACCTI- F110 - ITJ EJ.xlsx'
     # ID = input('Ingrese ID del predio: ')
-    ITJP = openpyxl.load_workbook(path_xlsx)
+    ITJP = openpyxl.load_workbook(data[1]["path_xlsx"])
     
 
-    juridico_pd = pd.read_excel('Source_Concepts/Juridico.xlsx')
-    ID_pred_ = juridico_pd.loc[juridico_pd['ID'] == int(ID)]
+    juridico = pd.read_excel(data[1]["juridico"])
+    ID_pred_ = juridico.loc[juridico['ID'] == int(ID)]
     agronomia_pd = pd.read_excel('Source_Concepts/UAF.xlsx')
     ID_pred = agronomia_pd.loc[agronomia_pd['ID'] == int(ID)]
 
@@ -237,18 +107,18 @@ for ID in vector_ID:
     
     # Nombre solicitante
 
-    resultado = SQL.exe_sql_2()
-    print(len(resultado))
-    if len(resultado) == 2:  
-        sheet['B9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[0][7]}
-    Documento de identifcación: {SQL.exe_sql_2()[0][6]}"""
-        sheet['R9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[1][7]}
-    Documento de identifcación: {SQL.exe_sql_2()[1][6]}"""
-    elif len(SQL.exe_sql_2()) == 1:
-        sheet['B9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[0][2]}
-    Documento de identificación: {SQL.exe_sql_2()[0][3]}"""
-    else:
-        print('Warning: Predio > 2 interesados')
+    # resultado = SQL.exe_sql_2()
+    # print(len(resultado))
+    # if len(resultado) == 2:  
+    #     sheet['B9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[0][7]}
+    # Documento de identifcación: {SQL.exe_sql_2()[0][6]}"""
+    #     sheet['R9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[1][7]}
+    # Documento de identifcación: {SQL.exe_sql_2()[1][6]}"""
+    # elif len(SQL.exe_sql_2()) == 1:
+    #     sheet['B9'] = f"""Nombre solicitante: {SQL.exe_sql_2()[0][2]}
+    # Documento de identificación: {SQL.exe_sql_2()[0][3]}"""
+    # else:
+    #     print('Warning: Predio > 2 interesados')
     # # Nombre del Predio
     # sheet['B19'] = f"""Nombre: {schema[0][4]}"""
     # # Area predio
@@ -261,8 +131,8 @@ for ID in vector_ID:
     # lyr_restricciones = []
 
     # lyr_dep = driver.Open('Layers/Departamentos.shp')
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    lyr_mun = driver.Open('Layers/Municipios.shp')
+    # driver = ogr.GetDriverByName('ESRI Shapefile')
+    # lyr_mun = driver.Open('Layers/Municipios.shp')
 
     # sheet['X19'] = f"""Municipio: {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}"""
     # sheet['P19']= f"""Departamento: {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}"""
@@ -497,10 +367,10 @@ for ID in vector_ID:
     # con_agronomia = f"""De acuerdo a la información recaudada a través del método indirecto de mesas colaborativas, se determinó que para la zona donde está ubicado el predio, se presenta un régimen de lluvias monomodal y condiciones de suelos con textura mayormente arcillosa y ph  fuertemente ácidos, bajos contenidos de materia orgánica y condiciones productivas aptas para determinados cultivos y ganadería bovina y bufalina. \n \nAdemás, se tiene que el predio denominado {schema[0][4]}, ubicado en el departamento de {intersect_layers_F(lyr_dep, predio,'NOMBRE_DEP')[0]}, municipio de {intersect_layers_F(lyr_mun, predio,'NOMBRE_MUN')[0]}, vereda {ID_pred.iloc[0,1].upper()},cuenta con un área según el plano topográfico de {(num2words(round((int(schema[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(schema[0][1]) - int(schema[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(schema[0][1])))}Ha + {round((float(schema[0][1]) - int(schema[0][1]))*10000,2)}m2), el cual está siendo ocupado hace {ID_pred.iloc[0,2]} años, por {sex_interesado(schemax[0][1])} solicitante de manera directa, que a su vez realiza una explotación de {cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}. \n \nSegún la inspección ocular realizada (Formato ANT - ACCTI-F-116), realizada el {date}, en el predio no se evidencia ningún tipo de situaciones de riesgo o condiciones tales como remociones en masa de tierra, crecientes súbitas o pendientes mayores a 45° que representen peligro para la integridad de {sex_interesado(schemax[0][1])} ocupantes. \n \nDesde el componente ambiental no se observan limitantes que afecten los recursos naturales, el medio ambiente ni la zona productiva del predio. \n \nBajo estas condiciones, el grupo de Agronomía a cargo de esta evaluación determinó el cálculo de UAF con propuesta de producción de {def_uaf(schema[0][1])[2]}. Resultado de esta propuesta se estableció un rango de área para obtener entre 2 a 2.5 smmlv de {int(def_uaf(schema[0][1])[0])}Ha + {round((float(def_uaf(schema[0][1])[0]) - int(def_uaf(schema[0][1])[0]))*10000,3)}m2 a {int(def_uaf(schema[0][1])[1])}Ha + {round((float(def_uaf(schema[0][1])[1]) - int(def_uaf(schema[0][1])[1]))*10000,3)}. Con lo anterior, se establece que el predio está {def_uaf(schema[0][1])[3]} rango de la UAF mencionada, con la capacidad de producir {def_uaf(schema[0][1])[4]} smmlv, en la actualidad. \n \nEn consecuencia, de lo explicado anteriormente, desde el componente agronómico de la Subdirección de Acceso a Tierras por Demanda y Descongestión se recomienda continuar con el proceso de adjudicación del predio. """
     # print(cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4]))
     # area = SQL.exe_sql()[0][1]
-    # UAF = agricola(area)
-    # print(UAF)
-    # result = UAF.def_uaf()
-    # print(result)
+    UAF = agricola(SQL.exe_sql()[0][1])
+    
+    
+        # print(result)
     # sheet['L51'] = con_agronomia
     # sheet['Q26'] = f"""Porción Cultivada o explotada:{cultivos(ID_pred.iloc[0,3], ID_pred.iloc[0,4])}"""
     
@@ -562,9 +432,9 @@ for ID in vector_ID:
 # Realizar operaciones con los resultados obtenidos
 # ...
 
-interesado = interesado(SQL.exe_sql())
-result = interesado.names_interesados()
-print(result)
+# interesado = interesado(SQL.exe_sql())
+# result = interesado.names_interesados()
+# print(result)
 
 
 
