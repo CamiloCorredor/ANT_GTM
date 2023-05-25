@@ -2,8 +2,8 @@ import osgeo.ogr
 
 class OP_geographic:
     
-    def __init__(self,object_XTF,path_layer):
-        self.path_layer = path_layer
+    def __init__(self,object_XTF):
+        
         self.object_XTF = object_XTF
         self.total_area = []
         self.intersection = []
@@ -12,8 +12,8 @@ class OP_geographic:
         self.feature_intersects = []
         self.intersection = []
 
-    def intersect_layers_A(self):
-        layer = self.path_layer.GetLayer()
+    def intersect_layers_A(self, path_layer):
+        layer = path_layer.GetLayer()
         for feature in layer:
             geometry = feature.GetGeometryRef()
             intersect = geometry.Intersection(self.object_XTF)
@@ -32,21 +32,21 @@ class OP_geographic:
         return sum(self.total_area), self.union_geom.Area()
 
 
-    def intersect_layers_F(self, Field): ##Return features
+    def intersect_layers_F(self, path_layer, Field): ##Return features
         
-        layer = self.path_layer.GetLayer()
+        layer = path_layer.GetLayer()
         for feature in layer:     
             geometry = feature.GetGeometryRef()
             inter_tf = geometry.Intersect(self.object_XTF)
-            if inter_tf == True:                
+            if inter_tf:                
                 self.feature_intersects.append(feature.GetField(Field))       
         else: 
             pass
         return self.feature_intersects
 
-    def intersect_layers_FA(self,Field,Field_R): ##Return features y areas
+    def intersect_layers_FA(self,path_layer ,Field,Field_R): ##Return features y areas
         
-        layer = self.path_layer.GetLayer()
+        layer = path_layer.GetLayer()
         for feature in layer:     
             geometry = feature.GetGeometryRef()
             intersect = geometry.Intersection(self.object_XTF)
@@ -59,13 +59,13 @@ class OP_geographic:
             else:              
                 pass
         for geom in self.intersection:
-            union_geom = union_geom.Union(geom)
+            self.union_geom = self.union_geom.Union(geom)
 
         return sum(self.total_area), self.union_geom.Area()
 
-def intersect_layers_FA(self,Field,Field_R): ##Return features y areas
+    def intersect_layers_DIFFFA(self,path_layer, Field,Field_R): ##Return features y areas
         
-        layer = self.path_layer.GetLayer()
+        layer = path_layer.GetLayer()
         for feature in layer:     
             geometry = feature.GetGeometryRef()
             intersect = geometry.Intersection(self.object_XTF)
@@ -78,6 +78,6 @@ def intersect_layers_FA(self,Field,Field_R): ##Return features y areas
             else:              
                 pass
         for geom in self.intersection:
-            union_geom = union_geom.Union(geom)
+            self.union_geom = self.union_geom.Union(geom)
 
         return sum(self.total_area), self.union_geom.Area()

@@ -8,11 +8,11 @@ class interesado:
 
     def sex_interesado(self):
         sex_interesado = ''
-        if self.squema == 'Femenino':
+        if self.squema[0][1] == 'Femenino':
             sex_interesado = 'la interesada' 
-        elif self.squema == 'Masculino':
+        elif self.squema[0][1] == 'Masculino':
             sex_interesado = 'el interesado' 
-        elif self.squema == None:
+        elif self.squema[0][1] == None:
             sex_interesado = 'los interesados'
         else:
             pass

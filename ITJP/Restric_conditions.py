@@ -5,8 +5,8 @@ from num2words import num2words
 
 class Restricciones_condiciones:
 
-    def __init__(self, list_lyrs, objetct_XTF):
-        self.list_lyrs = list_lyrs
+    def __init__(self, objetct_XTF):
+        
         self.name_lyrs = []
         self.object_XTF = objetct_XTF
         self.string = ''
@@ -18,25 +18,25 @@ class Restricciones_condiciones:
         self.Suma_area = 0  
         self.strg = ''            
 
-    def condiciones(self):
+    def condiciones(self, list_lyrs):
     
-        for i in self.list_lyrs:
+        for i in list_lyrs:
             self.name_lyrs.append(os.path.splitext(os.path.basename(i.GetName()))[0])
   
-        if len(self.list_lyrs) > 1:
+        if len(list_lyrs) > 1:
             self.string = ', '.join(self.name_lyrs[:-1]) + ' y ' + self.name_lyrs[-1]
         else:
             self.string = self.name_lyrs[0]
 
         return self.string 
 
-    def A_restricciones(self):
+    def A_restricciones(self,list_lyrs):
       
-        for i in self.list_lyrs:
-            object_geographic = OP_geographic(self.object_XTF,i)
+        for i in list_lyrs:
+            object_geographic = OP_geographic(self.object_XTF)
             if os.path.splitext(os.path.basename(i.GetName()))[0] == 'SOLICITUD_INGRESO_RTDAF':
-                self.intersection = object_geographic.intersect_layers_FA('estado_tra', 'Sentencia')[0]
-                if self.intersection[0] > 0:
+                self.intersection = object_geographic.intersect_layers_FA(i, 'estado_tra', 'Sentencia')[0]
+                if self.intersection > 0:
                     self.lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
                     if isinstance(self.intersection[1],osgeo.ogr.Geometry):
                         self.poly_intersect.append(self.intersection[1])
@@ -47,7 +47,7 @@ class Restricciones_condiciones:
                     pass
 
             elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'Drenaje_Sencillo_(30m)_':
-                self.intersection = object_geographic.intersect_layers_DIFFFA('NOMBRE_GEO', 'None')
+                self.intersection = object_geographic.intersect_layers_DIFFFA(i, 'NOMBRE_GEO', None)
                 if self.intersection[0] > 0:
                     self.lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
                     if isinstance(self.intersection[1], osgeo.ogr.Geometry):
@@ -59,7 +59,7 @@ class Restricciones_condiciones:
                     pass
         
             elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'DRENAJE_DOBLE':
-                self.intersection = object_geographic.intersect_layers_DIFFA('NOMBRE_GEO',None)
+                self.intersection = object_geographic.intersect_layers_DIFFFA(i, 'NOMBRE_GEO',None)
                 if self.intersection[0] > 0:
                     self.lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
                     if isinstance(self.intersection[1], osgeo.ogr.Geometry):
@@ -71,7 +71,7 @@ class Restricciones_condiciones:
                     pass
 
             elif os.path.splitext(os.path.basename(i.GetName()))[0] == 'remocion_en_masa':
-                self.intersection = object_geographic.intersect_layers_FA('CATAME','Alta')
+                self.intersection = object_geographic.intersect_layers_FA(i,'CATAME','Alta')
                 if self.intersection[0] > 0:
                     self.lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
                     if isinstance(self.intersection,osgeo.ogr.Geometry):
@@ -93,7 +93,7 @@ class Restricciones_condiciones:
                     # print(type(intersect_layers_FA(i,predio,'CATAME','Muy Alta')[1]))
                 else:
                     pass
-            elif os.path.splitext(os.path.basename(i.GetName()))[0] != 'remocion_en_masa' and os.path.splitext(os.path.basename(i.GetName()))[0] != 'Drenaje_Sencillo_(30m)_' and  os.path.splitext(os.path.basename(i.GetName()))[0] != 'SOLICITUD_INGRESO_RTDAF' and intersect_layers_A(i,object_XTF)[0] > 0:
+            elif os.path.splitext(os.path.basename(i.GetName()))[0] != 'remocion_en_masa' and os.path.splitext(os.path.basename(i.GetName()))[0] != 'Drenaje_Sencillo_(30m)_' and  os.path.splitext(os.path.basename(i.GetName()))[0] != 'SOLICITUD_INGRESO_RTDAF' and object_geographic.intersect_layers_A(i)[0] > 0:
                 self.lyr_restricciones.append(os.path.splitext(os.path.basename(i.GetName()))[0])
                 poly = object_geographic.intersect_layers_A()[1]
                 if isinstance(poly,osgeo.ogr.Geometry):
@@ -107,9 +107,9 @@ class Restricciones_condiciones:
             
             self.lyr_restricciones = list(set(self.lyr_restricciones))
             for geom in self.poly_intersect:
-                union_geom = union_geom.Union(geom)
+                self.union_geom = self.union_geom.Union(geom)
 
-            self.Suma_area = union_geom.Area()/10000
+            self.Suma_area = self.union_geom.Area()/10000
 
             if len(self.lyr_restricciones) > 0:
                 AU = self.object_XTF - self.Suma_area

@@ -110,7 +110,7 @@ class agricola:
         return range
 
 
-    def cultivos(lis_t1, lis_t2):
+    def cultivos(self, lis_t1, lis_t2):
         strg = ''              
         cultivos = lis_t1 
         cultivos_ = cultivos.split(", ")

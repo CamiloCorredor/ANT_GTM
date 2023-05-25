@@ -14,6 +14,6 @@ class BIP:
         if not row.empty:  # Verificar si se encontró alguna fila
             self.valor = row[categoria].values[0]
         else:
-            self.valor = None  # Opcionalmente, puedes asignar un valor predeterminado si no se encuentra ninguna fila
+            self.valor = None  
     
         return self.valor
