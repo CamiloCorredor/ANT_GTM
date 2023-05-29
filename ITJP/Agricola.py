@@ -43,7 +43,7 @@ class agricola:
                 range.append(round((self.object_XTF*2.5)/range_UAF[2],2))
                    ##FRijol - Maíz
 
-        elif self.object_XTF >= range_UAF[3] and self.self.object_XTF <= range_UAF[5]:        
+        elif self.object_XTF >= range_UAF[3] and self.object_XTF <= range_UAF[5]:        
             range.append(range_UAF[4])
             range.append(range_UAF[5])
             range.append('caña y plátano')
