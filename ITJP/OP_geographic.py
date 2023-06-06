@@ -33,7 +33,7 @@ class OP_geographic:
 
 
     def intersect_layers_F(self, path_layer, Field): ##Return features
-        
+        self.feature_intersects = []
         layer = path_layer.GetLayer()
         for feature in layer:     
             geometry = feature.GetGeometryRef()

@@ -11,6 +11,7 @@ class SQL_LADM:
         self.connection = self.connect()
         self.cursor = self.connection.cursor()
         self.schema = None
+        ##                              0                                       1                                               2               3                   4
         self.__sql = f"""select P.id_operacion as QR, (st_area(T.geometria))/10000 as AREA_PRED, upper(I.nombre), I.documento_identidad, upper(P.nombre), T.geometria as geom, P.matricula_inmobiliaria as fmi, GIT.dispname as grupo_perso
         from rev_08.lc_predio as P
         inner join rev_08.lc_terreno as T on P.id_operacion = T.etiqueta 

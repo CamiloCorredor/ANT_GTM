@@ -4,7 +4,7 @@ class ITJP:
         self.vector_ID = vector_ID
         
 
-    def ITJP(vector_ID):
+    def ITJP(self):
         import time
         BP = time.time()
         print('Iniciando ITJP ...')
@@ -49,7 +49,8 @@ class ITJP:
         
         from Agricola import agricola
         
-        from Restric_conditions import Restricciones_condiciones
+        from Restric_conditions import Restricciones_condiciones, conceptos
+
         
         from BIP import BIP      
                 
@@ -57,14 +58,14 @@ class ITJP:
                
         #vector_ID = ['5035010005']
         
-        for ID in vector_ID:     
+        for ID in self.vector_ID:     
                     
             object_agro = BIP(data[1]["agronomia"], ID)
             object_juri = BIP(data[1]["juridico"], ID)    
             
             print(f'Informe Técnico Jurídico Preliminar {ID}')
             ITJP = openpyxl.load_workbook(data[1]["path_xlsx"])
-            
+
             date_ = str(object_agro.info("FECHA_INSPECCION_OCULAR"))
             truncated_time_string = date_[:26]  
             date_ = datetime.strptime(truncated_time_string, '%Y-%m-%dT%H:%M:%S.%f') 
@@ -76,14 +77,14 @@ class ITJP:
             date_ = excel_start_date + delta 
             date_LV = date_.strftime('%d/%m/%Y')
         
-            date_ = datetime.strptime(str(object_juri.info("FECHA_FORMATO AGRONOMIA")), '%Y-%m-%d %H:%M:%S')
+            date_ = datetime.strptime(str(object_juri.info("FECHA_FORMATO AGRONOMIA")), '%d/%m/%Y')
             date_FA = date_.strftime('%d/%m/%Y')
         
             date_ = str(object_juri.info("F-007"))
             truncated_time_string = date_[:26]  
-            date_ = datetime.strptime(truncated_time_string, '%Y-%m-%dT%H:%M:%S.%f') 
+            date_ = datetime.strptime(truncated_time_string, '%d/%m/%Y') 
             date_F007 = date_.strftime('%d/%m/%Y')
-        
+
             SQL = SQL_LADM("localhost", "ladm_ttsp", "postgres", "1234", ID)
             
             sheet = ITJP['Hoja1']
@@ -267,79 +268,81 @@ class ITJP:
             sheet['L50'] = f"""La UAF predial del predio corresponde a: {int(UAF.def_uaf()[0])}Ha + {round((float(UAF.def_uaf()[0]) - int(UAF.def_uaf()[0]))*10000,3)}m2 a {int(UAF.def_uaf()[1])}Ha + {round((float(UAF.def_uaf()[1]) - int(UAF.def_uaf()[1]))*10000,3)}"""
         
             # Condicionante
-            lyr_ZM = driver.Open(data[0]["lyr_ZM"]) ##Zonificación Manejo
-            lyr_condiciones.append(lyr_ZM) if OP_GEO.intersect_layers_A(lyr_ZM)[0] > 0 else None
+            # lyr_ZM = driver.Open(data[0]["lyr_ZM"]) ##Zonificación Manejo
+            # lyr_condiciones.append(lyr_ZM) if OP_GEO.intersect_layers_A(lyr_ZM)[0] > 0 else None
         
-            lyr_deg_s = driver.Open(data[0]["lyr_deg_s"]) ##Degradación suelo
-            lyr_condiciones.append(lyr_deg_s) if OP_GEO.intersect_layers_A(lyr_deg_s)[0] > 0 else None
+            # lyr_deg_s = driver.Open(data[0]["lyr_deg_s"]) ##Degradación suelo
+            # lyr_condiciones.append(lyr_deg_s) if OP_GEO.intersect_layers_A(lyr_deg_s)[0] > 0 else None
         
-            lyr_ZSI = driver.Open(data[0]["lyr_ZSI"]) ##Zonas Susceptibles Inundación
-            lyr_condiciones.append(lyr_ZSI) if OP_GEO.intersect_layers_A(lyr_ZSI)[0] > 0 else None
+            # lyr_ZSI = driver.Open(data[0]["lyr_ZSI"]) ##Zonas Susceptibles Inundación
+            # lyr_condiciones.append(lyr_ZSI) if OP_GEO.intersect_layers_A(lyr_ZSI)[0] > 0 else None
         
-            lyr_AFPC = driver.Open(data[0]["lyr_AFPC"])
-            lyr_condiciones.append(lyr_AFPC) if OP_GEO.intersect_layers_A(lyr_AFPC)[0] > 0 else None
+            # lyr_AFPC = driver.Open(data[0]["lyr_AFPC"])
+            # lyr_condiciones.append(lyr_AFPC) if OP_GEO.intersect_layers_A(lyr_AFPC)[0] > 0 else None
         
-            lyr_SMV = driver.Open(data[0]["lyr_SMV"])
-            lyr_condiciones.append(lyr_SMV) if OP_GEO.intersect_layers_A(lyr_SMV)[0] > 0 else None
+            # lyr_SMV = driver.Open(data[0]["lyr_SMV"])
+            # lyr_condiciones.append(lyr_SMV) if OP_GEO.intersect_layers_A(lyr_SMV)[0] > 0 else None
         
             # lyr_l2 = driver.Open('Layers/Ley2.shp')
             # lyr_condiciones.append(lyr_l2)
         
-            lyr_EMA = driver.Open(data[0]["lyr_EMA"])
-            lyr_condiciones.append(lyr_EMA) if OP_GEO.intersect_layers_A(lyr_EMA)[0] > 0 else None
+            # lyr_EMA = driver.Open(data[0]["lyr_EMA"])
+            # lyr_condiciones.append(lyr_EMA) if OP_GEO.intersect_layers_A(lyr_EMA)[0] > 0 else None
             
-            lyr_CR = driver.Open(data[0]["lyr_CR"]) ##OK Capa
-            lyr_condiciones.append(lyr_CR) if OP_GEO.intersect_layers_A(lyr_CR)[0] > 0 else None
+            # lyr_CR = driver.Open(data[0]["lyr_CR"]) ##OK Capa
+            # lyr_condiciones.append(lyr_CR) if OP_GEO.intersect_layers_A(lyr_CR)[0] > 0 else None
         
-            lyr_PSM = driver.Open(data[0]["lyr_PSM"])
-            lyr_condiciones.append(lyr_PSM) if OP_GEO.intersect_layers_A(lyr_PSM)[0] > 0 else None
+            # lyr_PSM = driver.Open(data[0]["lyr_PSM"])
+            # lyr_condiciones.append(lyr_PSM) if OP_GEO.intersect_layers_A(lyr_PSM)[0] > 0 else None
         
-            lyr_MTH = driver.Open(data[0]["lyr_MTH"])
-            lyr_condiciones.append(lyr_MTH) if OP_GEO.intersect_layers_A(lyr_MTH)[0] > 0 else None
+            # lyr_MTH = driver.Open(data[0]["lyr_MTH"])
+            # lyr_condiciones.append(lyr_MTH) if OP_GEO.intersect_layers_A(lyr_MTH)[0] > 0 else None
         
-            lyr_H = driver.Open(data[0]["lyr_H"])
-            lyr_condiciones.append(lyr_H) if OP_GEO.intersect_layers_A(lyr_H)[0] > 0 else None
+            # lyr_H = driver.Open(data[0]["lyr_H"])
+            # lyr_condiciones.append(lyr_H) if OP_GEO.intersect_layers_A(lyr_H)[0] > 0 else None
         
-            lyr_HTMMP = driver.Open(data[0]["lyr_HTMMP"])
-            lyr_condiciones.append(lyr_HTMMP) if OP_GEO.intersect_layers_A(lyr_HTMMP)[0] > 0 else None
+            # lyr_HTMMP = driver.Open(data[0]["lyr_HTMMP"])
+            # lyr_condiciones.append(lyr_HTMMP) if OP_GEO.intersect_layers_A(lyr_HTMMP)[0] > 0 else None
         
-            lyr_HSMMP = driver.Open(data[0]["lyr_HSMMP"])
-            lyr_condiciones.append(lyr_HSMMP) if OP_GEO.intersect_layers_A(lyr_HSMMP)[0] > 0 else None
+            # lyr_HSMMP = driver.Open(data[0]["lyr_HSMMP"])
+            # lyr_condiciones.append(lyr_HSMMP) if OP_GEO.intersect_layers_A(lyr_HSMMP)[0] > 0 else None
         
-            lyr_FA = driver.Open(data[0]["lyr_FA"])
-            lyr_condiciones.append(lyr_FA) if OP_GEO.intersect_layers_A(lyr_FA)[0] > 0 else None
+            # lyr_FA = driver.Open(data[0]["lyr_FA"])
+            # lyr_condiciones.append(lyr_FA) if OP_GEO.intersect_layers_A(lyr_FA)[0] > 0 else None
         
-            lyr_ELTA = driver.Open(data[0]["lyr_ELTA"])
-            lyr_condiciones.append(lyr_ELTA) if OP_GEO.intersect_layers_A(lyr_ELTA)[0] > 0 else None
+            # lyr_ELTA = driver.Open(data[0]["lyr_ELTA"])
+            # lyr_condiciones.append(lyr_ELTA) if OP_GEO.intersect_layers_A(lyr_ELTA)[0] > 0 else None
         
-            lyr_CS = driver.Open(data[0]["lyr_CS"])
-            lyr_condiciones.append(lyr_CS) if OP_GEO.intersect_layers_A(lyr_CS)[0] > 0 else None
+            # lyr_CS = driver.Open(data[0]["lyr_CS"])
+            # lyr_condiciones.append(lyr_CS) if OP_GEO.intersect_layers_A(lyr_CS)[0] > 0 else None
         
-            lyr_CP = driver.Open(data[0]["lyr_CP"])
-            lyr_condiciones.append(lyr_CP) if OP_GEO.intersect_layers_A(lyr_CP)[0] > 0 else None
+            # lyr_CP = driver.Open(data[0]["lyr_CP"])
+            # lyr_condiciones.append(lyr_CP) if OP_GEO.intersect_layers_A(lyr_CP)[0] > 0 else None
         
-            Lyr_ZRC_PC = driver.Open(data[0]["Lyr_ZRC_PC"])
-            lyr_condiciones.append(Lyr_ZRC_PC) if OP_GEO.intersect_layers_A(Lyr_ZRC_PC)[0] > 0 else None
+            # Lyr_ZRC_PC = driver.Open(data[0]["Lyr_ZRC_PC"])
+            # lyr_condiciones.append(Lyr_ZRC_PC) if OP_GEO.intersect_layers_A(Lyr_ZRC_PC)[0] > 0 else None
         
-            lyr_BVMA = driver.Open(data[0]["lyr_BVMA"])
-            lyr_condiciones.append(lyr_BVMA) if OP_GEO.intersect_layers_A(lyr_BVMA)[0] > 0 else None
+            # lyr_BVMA = driver.Open(data[0]["lyr_BVMA"])
+            # lyr_condiciones.append(lyr_BVMA) if OP_GEO.intersect_layers_A(lyr_BVMA)[0] > 0 else None
         
-            lyr_BEMA = driver.Open(data[0]["lyr_BEMA"])
-            lyr_condiciones.append(lyr_BEMA) if OP_GEO.intersect_layers_A(lyr_BEMA)[0] > 0 else None
+            # lyr_BEMA = driver.Open(data[0]["lyr_BEMA"])
+            # lyr_condiciones.append(lyr_BEMA) if OP_GEO.intersect_layers_A(lyr_BEMA)[0] > 0 else None
         
-            lyr_RM = driver.Open(data[0]["lyr_RM"])
-            lyr_restricciones.append(lyr_RM)
+            # lyr_RM = driver.Open(data[0]["lyr_RM"])
+            # lyr_restricciones.append(lyr_RM)
             
-            if OP_GEO.intersect_layers_FA(lyr_RM,'CATAME','Media')[0] > 0 or OP_GEO.intersect_layers_FA(lyr_RM,'CATAME','Baja')[0] > 0:
-                lyr_condiciones.append(lyr_RM)
+            # if OP_GEO.intersect_layers_FA(lyr_RM,'CATAME','Media')[0] > 0 or OP_GEO.intersect_layers_FA(lyr_RM,'CATAME','Baja')[0] > 0:
+            #     lyr_condiciones.append(lyr_RM)
         
-            lyr_SL2 = driver.Open('Layers/RESERVA FORESTAL LEY SEGUNDA SUSTRACCIONES.shp')
-            lyr_condiciones.append(lyr_SL2) if OP_GEO.intersect_layers_A(lyr_SL2)[0] > 0 else None
+            # lyr_SL2 = driver.Open('Layers/RESERVA FORESTAL LEY SEGUNDA SUSTRACCIONES.shp')
+            # lyr_condiciones.append(lyr_SL2) if OP_GEO.intersect_layers_A(lyr_SL2)[0] > 0 else None
         
             RECO = Restricciones_condiciones(predio)
-        
-            con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {SQL.exe_sql()[0][4]}, ubicado en el departamento de {OP_GEO.intersect_layers_F(lyr_dep, 'NOMBRE_DEP')[0]}, municipio de {OP_GEO.intersect_layers_F(lyr_mun, 'NOMBRE_MUN')[0]}, vereda {object_agro.info("VEREDA").upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(SQL.exe_sql()[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(SQL.exe_sql()[0][1]) - int(SQL.exe_sql()[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(SQL.exe_sql()[0][1])))}Ha + {round((float(SQL.exe_sql()[0][1]) - int(SQL.exe_sql()[0][1]))*10000,2)}m2). Que el {date_F007}, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {RECO.A_restricciones(lyr_restricciones)[1]} \n \nIgualmente, se informa que el predio denominado {SQL.exe_sql()[0][4]}, se traslapa con los siguientes componentes condicionantes:{RECO.condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio."""
-            sheet['B53'] = con_catastral
+            obj_concepto = conceptos(ID)
+            v = obj_concepto.concepto_catastral()
+            print(v)
+            # con_catastral = f"""De acuerdo con la información recaudada a través del método indirecto de mesas colaborativas se determinó que el predio denominado {SQL.exe_sql()[0][4]}, ubicado en el departamento de {OP_GEO.intersect_layers_F(lyr_dep, 'NOMBRE_DEP')[0]}, municipio de {OP_GEO.intersect_layers_F(lyr_mun, 'NOMBRE_MUN')[0]}, vereda {object_agro.info("VEREDA").upper()}, cuenta con un área según el plano topográfico de {(num2words(round((int(SQL.exe_sql()[0][1]))), lang = 'es')).upper()} HECTÁREAS {(num2words(round((float(SQL.exe_sql()[0][1]) - int(SQL.exe_sql()[0][1]))*10000,2), lang = 'es')).upper()} METROS CUADRADOS ({round((int(SQL.exe_sql()[0][1])))}Ha + {round((float(SQL.exe_sql()[0][1]) - int(SQL.exe_sql()[0][1]))*10000,2)}m2). Que el {date_F007}, el grupo de topografía de la ANT, elaboró el cruce de información geográfica (F-007), y/o análisis espacial y cuya conclusión respecto del predio objeto de solicitud es que {RECO.A_restricciones(lyr_restricciones)[1]} \n \nIgualmente, se informa que el predio denominado {SQL.exe_sql()[0][4]}, se traslapa con los siguientes componentes condicionantes:{RECO.condiciones(lyr_condiciones)}. Sin embargo, estas no afectan el área potencial y/o útil de titulación del predio."""
+            sheet['B53'] = obj_concepto.concepto_catastral()
             
         
             
@@ -349,7 +352,7 @@ class ITJP:
             sheet['Q26'] = f"""Porción Cultivada o explotada:{UAF.cultivos(object_agro.info("CULTIVOS"), object_agro.info("CULTIVOS_%"))}"""
             
             persona = interesado(SQL.exe_sql())
-            print(UAF.def_uaf()[1])
+            
             con_juridico = f"""Con fundamento en el marco normativo establecido en la Resolución No. 20230010000036 del 12 de abril de 2023 suscrita por la Dirección General de la Agencia Nacional de Tierras y mediante la cual se expidió el Reglamento Operativo de esta entidad, se procedió a la revisión jurídica del proceso de adjudicación de predio denominado {SQL.exe_sql()[0][4]}. 
             Para todos los fines de este documento se comprende que los documentos, planos, soportes técnicos y /o oficios del caso que se relacionan a continuación fueron identificados y ubicados en el expediente No. {object_juri.info("EXPEDIENTE")} de los sistemas de información SIT y ORFEO de la Agencia Nacional de Tierras.
             Evaluación de la naturaleza jurídica del predio (articulo 28, numeral 1 de Resolución 20230010000036 del 12 de abril de 2023)
@@ -369,10 +372,12 @@ class ITJP:
             Respecto de la información de cruces con bases de datos de los solicitantes, la Subdirección de Acceso a Tierras por Demanda y Descongestión – SATDD, solicitó a la Subdirección de Sistemas de Información de Tierras – SSIT mediante memorandos 20234200091813 del 31 de marzo de 2023 y 20234200106273 del 15 de abril de 2023, la valoración e inclusión en el RESO de {SQL.exe_sql_1()[0][1]}.
             En consecuencia, la definición de inclusión ó no de los potenciales beneficiarios al RESO será confirmada con fundamento en estas valoraciones, es decir, si es procedente ó no la adjudicación del predio {SQL.exe_sql()[0][4]} a {persona.sex_interesado()} en el informe técnico jurídico definitivo. Esta situación se establece con fundamento en el artículo 38 del Reglamento Operativo.
             Se concluye entonces que la solicitud cumple con los requisitos objetivos para adjudicación del predio denominado {SQL.exe_sql()[0][4]} y en consecuencia, se comunica que es viable continuar con la etapa de apertura del trámite administrativo del Procedimiento Único de Reconocimiento de Derecho del predio {SQL.exe_sql()[0][4]}, ubicado en el municipio {OP_GEO.intersect_layers_F(lyr_mun, 'NOMBRE_MUN')[0]}, departamento {OP_GEO.intersect_layers_F(lyr_dep, 'NOMBRE_DEP')[0]} {persona.names_interesados()} de conformidad con el artículo 32 de la Resolución 20230010000036 del 12 de abril de 2023.""" 
-            #print(con_juridico)
+            print(con_juridico)
             sheet['B62'] = con_juridico
             path_out = f'Tec/{ID}.xlsx'
             ITJP.save(path_out)
         
         FP_= time.time()
         print(f'Tiempo final de ejecución {round((FP_-BP)/60,2)} minutos')
+
+        return lyr_condiciones, lyr_restricciones 
